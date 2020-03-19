@@ -36,7 +36,7 @@ namespace PaymentGateway.Application.Services
 
         public async Task OnProcessSuccessAsync(PaymentRequest paymentRequest)
         {
-            throw new NotImplementedException();
+            //TODO: Do nothing for now
         }
 
         public async Task<Payment> RetrieveAsync(Guid id)

@@ -1,17 +1,21 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using PaymentGateway.Application.Mapper;
 using PaymentGateway.Application.RequestModels;
+using PaymentGateway.Application.Services;
 using PaymentGateway.Application.Specifications;
 using PaymentGateway.Domain.Model;
 using PaymentGateway.Domain.Specifications;
 using PaymentGateway.Domain.Toolbox;
+using PaymentGateway.Domain.Toolbox.Interfaces;
 using PaymentGateway.Domain.Validators;
+using PaymentGateway.Infrastructure;
 using PaymentGateway.Infrastructure.DatabaseModels;
 using PaymentGateway.Infrastructure.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace PaymentGateway.SharedTests
 {
@@ -134,7 +138,7 @@ namespace PaymentGateway.SharedTests
             if (PaymentGatewayContext == null)
             {
                 PaymentGatewayContext = new PaymentGatewayContext(new DbContextOptionsBuilder<PaymentGatewayContext>()
-                   .UseInMemoryDatabase(databaseName: "PaymentGatewayInMemoryDatabase")
+                   .UseInMemoryDatabase(databaseName: "PaymentGatewayInMemoryDatabaseTests")
                    .Options);
 
                 DatabaseSeeding(PaymentGatewayContext);
@@ -181,6 +185,54 @@ namespace PaymentGateway.SharedTests
             }
 
             context.SaveChanges();
+        }
+
+        public static ICryptor GetCryptor()
+        {
+            return new Cryptor("b8f73557-fa21-4d5a-9cfe-ec5e29c3d340");
+        }
+
+        public static PaymentRequestToPayment GetPaymentRequestToPayment()
+        {
+            return new PaymentRequestToPayment(GetCreditCardRules(),
+                GetPaymentAmountRules(),
+                GetMerchantRule(),
+                GetCurrencyRule());
+        }
+
+        public static PaymentService GetPaymentService()
+        {
+            var logger = new NullLogger<PaymentService>();
+            var cryptor = GetCryptor();
+            var paymentRepository = new PaymentRepository(cryptor, GetPaymentGatewayContext());
+            return new PaymentService(paymentRepository, GetPaymentRequestToPayment(), logger);
+        }
+
+        public static bool PaymentExists(Guid id)
+        {
+            return (from tPayment in GetPaymentGatewayContext()
+                           .Payments.AsNoTracking()
+                            where tPayment.Id == id
+                            select tPayment).Count() == 1;
+        }
+
+        //https://blog.goyello.com/2011/11/23/entity-framework-invalid-operation/
+        public static void DetachObjectFromDb(PaymentGatewayContext unitOfWork)
+        {
+            foreach (var dbEntityEntry in unitOfWork.ChangeTracker.Entries().ToArray())
+            {
+                if (dbEntityEntry.Entity != null)
+                {
+                    dbEntityEntry.State = EntityState.Detached;
+                }
+            }
+        }
+
+        public static void DeleteTables(PaymentGatewayContext unitOfWork)
+        {
+            unitOfWork.Payments.RemoveRange(unitOfWork.Payments);
+            unitOfWork.SaveChanges();
+            DetachObjectFromDb(unitOfWork);
         }
     }
 }

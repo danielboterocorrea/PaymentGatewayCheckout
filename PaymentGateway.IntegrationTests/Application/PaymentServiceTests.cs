@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using NUnit.Framework;
 using PaymentGateway.Application.Mapper;
+using PaymentGateway.Application.Services;
 using PaymentGateway.Application.Specifications;
 using PaymentGateway.Domain.Exceptions;
 using PaymentGateway.Domain.Model;
@@ -16,6 +17,12 @@ namespace PaymentGateway.IntegrationTests.Application
     [TestFixture]
     public class PaymentServiceTests
     {
+        [SetUp]
+        public void SetUp()
+        {
+            TestsHelper.DeleteTables(TestsHelper.GetPaymentGatewayContext());
+        }
+
         [Test]
         public void PaymentRequestToPaymentValidDataTest()
         {
@@ -48,7 +55,7 @@ namespace PaymentGateway.IntegrationTests.Application
         }
 
         [Test]
-        public void ProcessPaymentInvalidCardTest()
+        public void PaymentRequestToPaymentInvalidDataTest()
         {
             var paymentRequest = TestsHelper.GetInvalidPaymentRequest();
             var paymentRequestToPayment = new PaymentRequestToPayment(TestsHelper.GetCreditCardRules(),
@@ -63,13 +70,10 @@ namespace PaymentGateway.IntegrationTests.Application
         }
 
         [Test]
-        public void ProcessPaymentInvalidCardMessageTest()
+        public void PaymentRequestToPaymentInvalidDataMessagesTest()
         {
             var paymentRequest = TestsHelper.GetInvalidPaymentRequest();
-            var paymentRequestToPayment = new PaymentRequestToPayment(TestsHelper.GetCreditCardRules(),
-                TestsHelper.GetPaymentAmountRules(),
-                TestsHelper.GetMerchantRule(),
-                TestsHelper.GetCurrencyRule());
+            var paymentRequestToPayment = TestsHelper.GetPaymentRequestToPayment();
 
             try
             {
@@ -88,6 +92,31 @@ namespace PaymentGateway.IntegrationTests.Application
                         string.Format(MerchantExists.messageFormat, paymentRequest.Merchant.Name)},
                     o => o.WithoutStrictOrdering());
             }
+        }
+
+        [Test]
+        public void ProcessPaymentInvalidCardMessageTest()
+        {
+            Assert.Throws<InvalidPaymentRequestException>(() =>
+            {
+                var paymentService = TestsHelper.GetPaymentService();
+                paymentService.ProcessAsync(TestsHelper.GetInvalidPaymentRequest()).GetAwaiter().GetResult();
+            }, $"Should throw {nameof(InvalidPaymentRequestException)}");
+        }
+
+        [Test]
+        public void ProcessPaymentValidCardMessageTest()
+        {
+
+            var paymentService = TestsHelper.GetPaymentService();
+            var paymentRequest = TestsHelper.GetValidPaymentRequest();
+            var Guid = paymentService.ProcessAsync(paymentRequest).GetAwaiter().GetResult();
+
+            Guid.Should().Be(paymentRequest.Id);
+            
+            TestsHelper.DetachObjectFromDb(TestsHelper.GetPaymentGatewayContext());
+
+            TestsHelper.PaymentExists(Guid).Should().BeTrue();
         }
     }
 }

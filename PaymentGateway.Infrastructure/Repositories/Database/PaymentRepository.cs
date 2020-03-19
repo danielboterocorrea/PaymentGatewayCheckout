@@ -28,14 +28,15 @@ namespace PaymentGateway.Infrastructure.Repositories
             var tpayment = new TPayment
             {
                 Id = payment.Id,
-                Merchant = MerchantMapper.From(payment.Merchant),
+                MerchantId = payment.Merchant.Id,
                 Amount = payment.Amount,
                 CreditCard = payment.CreditCard.Encrypt(_cryptor),
-                Currency = await GetCurrencyBy(payment.Currency.Value),
+                CurrencyId = (await GetCurrencyBy(payment.Currency.Value)).Id,
                 StatusCode = payment.StatusCode.ToString()
             };
 
-            await _unitOfWork.AddAsync(tpayment);
+            await _unitOfWork.Payments.AddAsync(tpayment);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         private async Task<TCurrency> GetCurrencyBy(string value)

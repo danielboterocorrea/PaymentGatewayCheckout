@@ -42,7 +42,7 @@ namespace PaymentGateway.Api.Controllers
 
         // POST: api/Payments
         [HttpPost]
-        public async Task Post([FromBody] PaymentRequest paymentRequest)
+        public async Task<ActionResult> Post([FromBody] PaymentRequest paymentRequest)
         {
             _logger.LogInformation($"Payment received {paymentRequest.ToString()}");
             //TODO: ProducerConsumer implementation, can't be treated like this
@@ -61,8 +61,10 @@ namespace PaymentGateway.Api.Controllers
             catch(InvalidPaymentRequestException invalidPaymentRequestException)
             {
                 _logger.LogError(invalidPaymentRequestException, $"Post - PaymentRequest id {paymentRequest.ToString()}");
+                return BadRequest(string.Join(",", invalidPaymentRequestException.Message.Split(",")));
             }
-            
+
+            return Ok(paymentRequest.Id);
         }
     }
 }

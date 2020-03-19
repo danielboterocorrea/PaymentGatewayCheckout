@@ -10,25 +10,25 @@ using System.Linq;
 
 namespace PaymentGateway.Infrastructure.Repositories
 {
-    public class MerchantRepository : IMerchantRepository
+    public class CurrencyRepository : ICurrencyRepository
     {
         private readonly PaymentGatewayContext _unitOfWork;
 
-        public MerchantRepository(PaymentGatewayContext unitOfWork)
+        public CurrencyRepository(PaymentGatewayContext unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Merchant> GetByAsync(string value)
+        public async Task<Currency> GetByAsync(string value)
         {
-            var merchantDb = await (from merchant in _unitOfWork.Merchants
-                                    where merchant.Name == value
-                                    select merchant).FirstOrDefaultAsync();
+            var currencyDb = await (from currency in _unitOfWork.Currencies.AsNoTracking()
+                                    where currency.Currency == value
+                   select currency).FirstOrDefaultAsync();
 
-            if (merchantDb == null)
+            if (currencyDb == null)
                 return null;
 
-            return new Merchant(merchantDb.Id, merchantDb.Name);
+            return new Currency(currencyDb.Currency);
         }
     }
 }

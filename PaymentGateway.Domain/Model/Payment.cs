@@ -11,7 +11,9 @@ namespace PaymentGateway.Domain.Model
         public CreditCard CreditCard { get; }
         public decimal Amount { get; }
         public Currency Currency { get; }
-        public StatusCode StatusCode { get; }
+        public StatusCode StatusCode { get; private set; }
+
+        public string Reason { get; private set; }
 
         public Payment(Guid id, Merchant merchant, CreditCard creditCard, decimal amount, Currency currency, StatusCode statusCode)
         {
@@ -21,6 +23,12 @@ namespace PaymentGateway.Domain.Model
             Amount = amount;
             Currency = currency;
             StatusCode = statusCode;
+        }
+
+        public void ChangeStatus(StatusCode statusCode, string reason)
+        {
+            StatusCode = StatusCode;
+            Reason = reason;
         }
 
         public override string ToString()

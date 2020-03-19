@@ -13,5 +13,6 @@ namespace PaymentGateway.Infrastructure.DatabaseModels
         public DbSet<TMerchant> Merchants { get; set; }
         public DbSet<TPayment> Payments { get; set; }
         public DbSet<TCurrency> Currencies { get; set; }
+
     }
 }
