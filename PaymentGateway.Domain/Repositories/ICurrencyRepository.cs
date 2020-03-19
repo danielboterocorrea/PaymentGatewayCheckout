@@ -8,6 +8,6 @@ namespace PaymentGateway.Domain.Repositories
 {
     public interface ICurrencyRepository
     {
-        Task<Currency> GetAsync(string value);
+        Task<Currency> GetByAsync(string value);
     }
 }

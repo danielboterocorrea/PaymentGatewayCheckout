@@ -15,5 +15,10 @@ namespace PaymentGateway.Domain.Model
         {
             Value = value;
         }
+
+        public override string ToString()
+        {
+            return $"Currency:[{Value}]";
+        }
     }
 }

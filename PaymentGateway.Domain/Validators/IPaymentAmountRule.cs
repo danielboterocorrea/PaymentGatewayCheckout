@@ -4,8 +4,8 @@ using System.Text;
 
 namespace PaymentGateway.Domain.Validators
 {
-    public interface ICurrencyValidator
+    public interface IPaymentAmountRule
     {
-        bool IsValid(string currency, out string error);
+        bool IsValid(decimal amount, out string error);
     }
 }

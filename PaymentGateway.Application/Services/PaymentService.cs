@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using PaymentGateway.Domain.Validators;
 using PaymentGateway.Application.Mappers.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace PaymentGateway.Application.Services
 {
@@ -14,16 +15,20 @@ namespace PaymentGateway.Application.Services
     {
         private readonly IPaymentRepository _paymentRepository;
         private readonly IPaymentRequestToPayment _paymentRequestToPayment;
+        private readonly ILogger<PaymentService> _logger;
 
         public PaymentService(IPaymentRepository paymentRepository,
-            IPaymentRequestToPayment paymentRequestToPayment)
+            IPaymentRequestToPayment paymentRequestToPayment,
+            ILogger<PaymentService> logger)
         {
             _paymentRepository = paymentRepository;
             _paymentRequestToPayment = paymentRequestToPayment;
+            _logger = logger;
         }
 
         public async Task<Guid> ProcessAsync(PaymentRequest paymentRequest)
         {
+            _logger.LogInformation($"Processing payment: {paymentRequest.Id}");
             var payment = await _paymentRequestToPayment.MapAsync(paymentRequest);
             await _paymentRepository.AddAsync(payment);
             return payment.Id;

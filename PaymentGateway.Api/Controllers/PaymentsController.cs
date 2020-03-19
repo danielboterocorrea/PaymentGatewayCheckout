@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Transactions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using PaymentGateway.Application.Mappers.Interfaces;
 using PaymentGateway.Application.RequestModels;
 using PaymentGateway.Application.ResponseModels;
@@ -21,12 +22,14 @@ namespace PaymentGateway.Api.Controllers
     {
         private readonly IPaymentService _paymentService;
         private readonly IPaymentToPaymentDetailResponse _paymentToPaymentDetailResponse;
+        private readonly ILogger<PaymentsController> _logger;
 
         public PaymentsController(IPaymentService paymentService,
-            IPaymentToPaymentDetailResponse paymentToPaymentDetailResponse)
+            IPaymentToPaymentDetailResponse paymentToPaymentDetailResponse, ILogger<PaymentsController> logger)
         {
             _paymentService = paymentService;
             _paymentToPaymentDetailResponse = paymentToPaymentDetailResponse;
+            _logger = logger;
         }
 
         // GET: api/Payments/5
@@ -41,6 +44,7 @@ namespace PaymentGateway.Api.Controllers
         [HttpPost]
         public async Task Post([FromBody] PaymentRequest paymentRequest)
         {
+            _logger.LogInformation($"Payment received {paymentRequest.ToString()}");
             //TODO: ProducerConsumer implementation, can't be treated like this
             try
             {
@@ -48,12 +52,15 @@ namespace PaymentGateway.Api.Controllers
                 {
                     var paymentId = await _paymentService.ProcessAsync(paymentRequest);
                     transaction.Complete();
+                    _logger.LogInformation($"Payment passed validations [Id: {paymentRequest}]");
                 }
+                _logger.LogInformation($"Start executing on process success");
                 await _paymentService.OnProcessSuccessAsync(paymentRequest);
+                _logger.LogInformation($"Stop executing on process success");
             }
             catch(InvalidPaymentRequestException invalidPaymentRequestException)
             {
-                //TODO: Invalid Response
+                _logger.LogError(invalidPaymentRequestException, $"Post - PaymentRequest id {paymentRequest.ToString()}");
             }
             
         }

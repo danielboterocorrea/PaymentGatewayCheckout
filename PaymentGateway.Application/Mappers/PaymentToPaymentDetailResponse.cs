@@ -17,7 +17,7 @@ namespace PaymentGateway.Application.Mappers
                 Amount = payment.Amount,
                 CreditCard = new RequestModels.CreditCardInfo
                 {
-                    Number = $"XXXX XXXX XXXX " + payment.CreditCard.Number.Substring(12),
+                    Number = CreditCard.MaskNumber(payment.CreditCard.Number),
                     ExpirationDate = payment.CreditCard.ExpirationDate,
                     Cvv = payment.CreditCard.Cvv,
                     HolderName = payment.CreditCard.HolderName

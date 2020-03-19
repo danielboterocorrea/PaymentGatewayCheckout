@@ -14,5 +14,10 @@ namespace PaymentGateway.Domain.Model
             Id = id;
             Name = name;
         }
+
+        public override string ToString()
+        {
+            return $"Merchant:[{Id} - {Name}]";
+        }
     }
 }

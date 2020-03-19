@@ -22,5 +22,10 @@ namespace PaymentGateway.Domain.Model
             Currency = currency;
             StatusCode = statusCode;
         }
+
+        public override string ToString()
+        {
+            return $"Payment:[{Id} - {Merchant} - {CreditCard} - {Amount} - {Currency} - {StatusCode}]";
+        }
     }
 }
