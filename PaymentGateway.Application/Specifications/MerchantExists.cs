@@ -11,6 +11,7 @@ namespace PaymentGateway.Application.Specifications
     public class MerchantExists : IMerchantExistRule
     {
         private readonly IMerchantRepository _merchantRepository;
+        public static string messageFormat = "Merchant {0} was not found";
 
         public MerchantExists(IMerchantRepository merchantRepository)
         {
@@ -20,7 +21,7 @@ namespace PaymentGateway.Application.Specifications
         {
             var merchant = await _merchantRepository.GetByAsync(name);
             if (merchant == null)
-                return (false, $"Merchant {name} was not found", null);
+                return (false, string.Format(messageFormat, name), null);
 
             return (true, string.Empty, merchant);
         }

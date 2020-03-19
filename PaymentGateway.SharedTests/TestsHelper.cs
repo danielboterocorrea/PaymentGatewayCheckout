@@ -83,8 +83,8 @@ namespace PaymentGateway.SharedTests
                 Currency = "COP",
                 CreditCard = new CreditCardInfo
                 {
-                    Cvv = 123,
-                    ExpirationDate = new DateTime(2025, 01, 01),
+                    Cvv = 12,
+                    ExpirationDate = new DateTime(2015, 01, 01),
                     HolderName = "",
                     Number = "1234_5678_9101_1213"
                 },

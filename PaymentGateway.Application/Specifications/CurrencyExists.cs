@@ -12,6 +12,8 @@ namespace PaymentGateway.Application.Specifications
     {
         private readonly ICurrencyRepository _currencyRepository;
 
+        public static string messageFormat = "Currency {0} was not found";
+
         public CurrencyExists(ICurrencyRepository currencyRepository)
         {
             _currencyRepository = currencyRepository;
@@ -22,7 +24,7 @@ namespace PaymentGateway.Application.Specifications
             var currency = await _currencyRepository.GetByAsync(name);
 
             if (currency == null)
-                return(false,$"Currency {name} was not found", null);
+                return(false,string.Format(messageFormat, name), null);
 
             return (true, string.Empty, currency);
         }
