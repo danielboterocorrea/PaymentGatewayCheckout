@@ -13,6 +13,7 @@ using PaymentGateway.Application.Mappers.Interfaces;
 using PaymentGateway.Application.RequestModels;
 using PaymentGateway.Application.ResponseModels;
 using PaymentGateway.Application.Services.Interfaces;
+using PaymentGateway.Application.Toolbox.Interfaces;
 using PaymentGateway.Domain.Exceptions;
 using PaymentGateway.Domain.Metrics;
 using PaymentGateway.Domain.Repositories;

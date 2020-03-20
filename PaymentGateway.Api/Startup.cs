@@ -31,6 +31,10 @@ using Microsoft.OpenApi.Models;
 using Prometheus;
 using PaymentGateway.Domain.Metrics;
 using PaymentGateway.Infrastructure.Metrics;
+using PaymentGateway.Application.Toolbox.Interfaces;
+using PaymentGateway.Application.Toolbox;
+using Serilog.Core;
+using Serilog;
 
 namespace PaymentGateway.Api
 {
@@ -98,6 +102,11 @@ namespace PaymentGateway.Api
             services.AddTransient<ICryptor>(sp => new Cryptor("d09e0b5a-7cb0-4ae5-9598-80ce6a8f0f4b"));
             services.AddSingleton<IGatewayCache, InMemoryGatewayCache>();
             services.AddTransient<IDateTimeProvider, DateTimeProvider>();
+            services.AddSingleton<IProducerConsumer>(ps =>
+            {
+                var loggerFactory = (ILoggerFactory)ps.GetService(typeof(ILoggerFactory));
+                return new PaymentProducerConsumer(loggerFactory.CreateLogger<PaymentProducerConsumer>(), 3);
+            });
         }
 
         private static void ConfigureRules(IServiceCollection services)

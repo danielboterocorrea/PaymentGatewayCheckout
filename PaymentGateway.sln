@@ -9,15 +9,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PaymentGateway.Domain", "Pa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PaymentGateway.Application", "PaymentGateway.Application\PaymentGateway.Application.csproj", "{09B1D44E-DD68-43AF-83FF-A1A7821AE8E7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaymentGateway.Infrastructure", "PaymentGateway.Infrastructure\PaymentGateway.Infrastructure.csproj", "{BD87914E-0606-43BB-9970-B54564953056}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PaymentGateway.Infrastructure", "PaymentGateway.Infrastructure\PaymentGateway.Infrastructure.csproj", "{BD87914E-0606-43BB-9970-B54564953056}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaymentGateway.UnitTests", "PaymentGateway.UnitTests\PaymentGateway.UnitTests.csproj", "{9C8E1961-75B2-4E40-92AD-A495F2528957}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PaymentGateway.UnitTests", "PaymentGateway.UnitTests\PaymentGateway.UnitTests.csproj", "{9C8E1961-75B2-4E40-92AD-A495F2528957}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaymentGateway.IntegrationTests", "PaymentGateway.IntegrationTests\PaymentGateway.IntegrationTests.csproj", "{BAC5D347-DA4F-49AE-B71A-4FC8C6A19D4E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PaymentGateway.IntegrationTests", "PaymentGateway.IntegrationTests\PaymentGateway.IntegrationTests.csproj", "{BAC5D347-DA4F-49AE-B71A-4FC8C6A19D4E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaymentGateway.SharedTests", "PaymentGateway.SharedTests\PaymentGateway.SharedTests.csproj", "{DF264C3C-31FE-48C0-8778-21F64864A849}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PaymentGateway.SharedTests", "PaymentGateway.SharedTests\PaymentGateway.SharedTests.csproj", "{DF264C3C-31FE-48C0-8778-21F64864A849}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaymentGateway.IdentityServer", "PaymentGateway.IdentityServer\PaymentGateway.IdentityServer.csproj", "{E8E6BF8B-2714-44FA-95AB-E351E0D342A1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PaymentGateway.IdentityServer", "PaymentGateway.IdentityServer\PaymentGateway.IdentityServer.csproj", "{E8E6BF8B-2714-44FA-95AB-E351E0D342A1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AcquiringBank.Simulator", "AcquiringBank.Simulator\AcquiringBank.Simulator.csproj", "{88042339-CB5C-4643-AD90-AECA486247FB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,6 +59,10 @@ Global
 		{E8E6BF8B-2714-44FA-95AB-E351E0D342A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E8E6BF8B-2714-44FA-95AB-E351E0D342A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E8E6BF8B-2714-44FA-95AB-E351E0D342A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88042339-CB5C-4643-AD90-AECA486247FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88042339-CB5C-4643-AD90-AECA486247FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88042339-CB5C-4643-AD90-AECA486247FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88042339-CB5C-4643-AD90-AECA486247FB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

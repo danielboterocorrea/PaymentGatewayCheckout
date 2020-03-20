@@ -5,6 +5,7 @@ using PaymentGateway.Application.Mapper;
 using PaymentGateway.Application.RequestModels;
 using PaymentGateway.Application.Services;
 using PaymentGateway.Application.Specifications;
+using PaymentGateway.Application.Toolbox.Interfaces;
 using PaymentGateway.Domain.Model;
 using PaymentGateway.Domain.Specifications;
 using PaymentGateway.Domain.Toolbox;
@@ -203,9 +204,10 @@ namespace PaymentGateway.SharedTests
         public static PaymentService GetPaymentService()
         {
             var logger = new NullLogger<PaymentService>();
+            var producerConsumer = new Mock<IProducerConsumer>();
             var cryptor = GetCryptor();
             var paymentRepository = new PaymentRepository(cryptor, GetPaymentGatewayContext());
-            return new PaymentService(paymentRepository, GetPaymentRequestToPayment(), logger);
+            return new PaymentService(paymentRepository, GetPaymentRequestToPayment(), logger, producerConsumer.Object);
         }
 
         public static bool PaymentExists(Guid id)
