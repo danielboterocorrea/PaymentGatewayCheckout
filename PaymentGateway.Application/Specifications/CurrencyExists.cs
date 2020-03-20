@@ -12,7 +12,7 @@ namespace PaymentGateway.Application.Specifications
     {
         private readonly ICurrencyRepository _currencyRepository;
 
-        public static string messageFormat = "Currency {0} was not found";
+        public static string messageFormat = "CurrencyNotExists";
 
         public CurrencyExists(ICurrencyRepository currencyRepository)
         {

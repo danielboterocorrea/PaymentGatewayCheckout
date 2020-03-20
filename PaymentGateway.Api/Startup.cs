@@ -28,7 +28,9 @@ using PaymentGateway.Infrastructure.Repositories;
 using PaymentGateway.Infrastructure.Repositories.Cache;
 using PaymentGateway.Infrastructure.Toolbox;
 using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.Swagger;
+using Prometheus;
+using PaymentGateway.Domain.Metrics;
+using PaymentGateway.Infrastructure.Metrics;
 
 namespace PaymentGateway.Api
 {
@@ -55,14 +57,68 @@ namespace PaymentGateway.Api
                 options.MinimumSameSitePolicy = Microsoft.AspNetCore.Http.SameSiteMode.None;
             });
 
-            services.AddDbContext<PaymentGatewayContext>(optionsBuilder => 
+            services.AddDbContext<PaymentGatewayContext>(optionsBuilder =>
                    optionsBuilder.UseInMemoryDatabase(databaseName: "PaymentGatewayInMemoryDatabase"));
 
+            ConfigureRepositories(services);
+            ConfigureRules(services);
+            ConfigureToolbox(services);
+            ConfigureAppServices(services);
+            ConfigureMetrics(services);
+
+            services.AddControllers()
+                    .AddNewtonsoftJson();
+
+            //TODO: Configuration file
+            string authority = "https://localhost:5002";
+
+            ConfigureIdentityServer(services, authority);
+
+            ConfigureSwagger(services, authority);
+        }
+
+        private static void ConfigureMetrics(IServiceCollection services)
+        {
+            //Metrics
+            services.AddSingleton<IMetricsCounter, PrometheusMetricsCounter>();
+            services.AddSingleton<IMetricsTime, PrometheusMetricsTime>();
+        }
+
+        private static void ConfigureAppServices(IServiceCollection services)
+        {
+            //Services
+            services.AddTransient<IPaymentService, PaymentService>();
+        }
+
+        private static void ConfigureToolbox(IServiceCollection services)
+        {
+
+            //Toolbox
+            //TODO: Get this from the configuration
+            services.AddTransient<ICryptor>(sp => new Cryptor("d09e0b5a-7cb0-4ae5-9598-80ce6a8f0f4b"));
+            services.AddSingleton<IGatewayCache, InMemoryGatewayCache>();
+            services.AddTransient<IDateTimeProvider, DateTimeProvider>();
+        }
+
+        private static void ConfigureRules(IServiceCollection services)
+        {
+            //Rules
+            services.AddTransient<ICreditCardRule, CardNumberNumeric16Digits>();
+            services.AddTransient<ICreditCardRule, Cvv3Numbers>();
+            services.AddTransient<ICreditCardRule, ExpiryDateHasntExpired>();
+            services.AddTransient<ICreditCardRule, HolderNotEmpty>();
+            services.AddTransient<IPaymentAmountRule, NonNegativeAmount>();
+            services.AddTransient<ICurrencyExistRule, CurrencyExists>();
+            services.AddTransient<IMerchantExistRule, MerchantExists>();
+        }
+
+        private static void ConfigureRepositories(IServiceCollection services)
+        {
             //Repositories
             services.AddTransient<CurrencyRepository>();
             services.AddTransient<MerchantRepository>();
             services.AddTransient<PaymentRepository>();
-            services.AddTransient<ICurrencyRepository,CurrencyCacheRepository>();
+            services.AddTransient<ICurrencyRepository, CurrencyCacheRepository>();
             services.AddTransient<IMerchantRepository, MerchantCacheRepository>();
             services.AddTransient<IPaymentRepository, PaymentRepository>();
             services.AddTransient<IPaymentToPaymentDetailResponse, PaymentToPaymentDetailResponse>();
@@ -85,28 +141,11 @@ namespace PaymentGateway.Api
                     new MerchantExists(merchantRepository),
                     new CurrencyExists(currencyRepository));
             });
+        }
 
-            //Rules
-            services.AddTransient<ICreditCardRule, CardNumberNumeric16Digits>();
-            services.AddTransient<ICreditCardRule, Cvv3Numbers>();
-            services.AddTransient<ICreditCardRule, ExpiryDateHasntExpired>();
-            services.AddTransient<ICreditCardRule, HolderNotEmpty>();
-            services.AddTransient<IPaymentAmountRule, NonNegativeAmount>();
-            services.AddTransient<ICurrencyExistRule, CurrencyExists>();
-            services.AddTransient<IMerchantExistRule, MerchantExists>();
-
-            //Toolbox
-            //TODO: Get this from the configuration
-            services.AddTransient<ICryptor>(sp => new Cryptor("d09e0b5a-7cb0-4ae5-9598-80ce6a8f0f4b"));
-            services.AddSingleton<IGatewayCache, InMemoryGatewayCache>();
-            services.AddTransient<IDateTimeProvider, DateTimeProvider>();
-
-            //Services
-            services.AddTransient<IPaymentService, PaymentService>();
-
-            services.AddControllers();
-
-            string authority = "https://localhost:5002";
+        private static void ConfigureIdentityServer(IServiceCollection services, string authority)
+        {
+            
             //IdentityServer4
             services.AddAuthentication("Bearer")
                 .AddJwtBearer("Bearer", options =>
@@ -117,7 +156,10 @@ namespace PaymentGateway.Api
 
                     options.Audience = "PaymentGatewayApi";
                 });
+        }
 
+        private static void ConfigureSwagger(IServiceCollection services, string authority)
+        {
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen(c =>
             {
@@ -151,8 +193,7 @@ namespace PaymentGateway.Api
                             Type = ReferenceType.SecurityScheme
                         }
                     },new List<string>()
-                }
-            });
+                }});
             });
         }
 
@@ -177,14 +218,13 @@ namespace PaymentGateway.Api
             // specifying the Swagger JSON endpoint.
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "PaymentGatewayApi V1");
                 c.RoutePrefix = string.Empty;
                 c.OAuthClientId("SwaggerApi");
                 c.OAuthClientSecret("7da3e461-a80e-4e02-a968-e21e255c4ec6");
                 c.OAuthAppName("PaymentGateway Api");
                 c.OAuth2RedirectUrl("https://localhost:44346/index.html");
                 c.OAuthUseBasicAuthenticationWithAccessCodeGrant();
-                c.InjectJavascript("OAuthHelper.js");
             });
 
             if (env.IsDevelopment())
@@ -194,12 +234,14 @@ namespace PaymentGateway.Api
 
             EnsureDatabaseIsSeeded(app);
 
-            app.UseHttpsRedirection();
+            //Do not redirect
+            //app.UseHttpsRedirection();
 
             app.UseRouting();
             app.UseStaticFiles();
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseMetricServer();
 
             app.UseEndpoints(endpoints =>
             {

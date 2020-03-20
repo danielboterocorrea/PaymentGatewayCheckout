@@ -11,7 +11,7 @@ namespace PaymentGateway.Application.Specifications
     public class MerchantExists : IMerchantExistRule
     {
         private readonly IMerchantRepository _merchantRepository;
-        public static string messageFormat = "Merchant {0} was not found";
+        public static string messageFormat = "MerchantNotExists";
 
         public MerchantExists(IMerchantRepository merchantRepository)
         {

@@ -39,7 +39,9 @@ namespace PaymentGateway.Api
                 .UseSerilog()
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseStartup<Startup>();
+                    webBuilder
+                    .UseUrls(new[] { "http://*:53746", "https://*:44346" })
+                    .UseStartup<Startup>();
                 });
     }
 }
