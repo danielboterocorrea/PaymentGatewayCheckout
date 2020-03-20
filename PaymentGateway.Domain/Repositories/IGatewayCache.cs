@@ -8,6 +8,6 @@ namespace PaymentGateway.Domain.Repositories
     {
         bool TryGet<T>(string key, out T value);
         void Remove(string key);
-        void UpdateOrCreate<T>(string key, T value);
+        void UpdateOrCreate<T>(string key, T value, int timePersistenceSeconds = 300);
     }
 }

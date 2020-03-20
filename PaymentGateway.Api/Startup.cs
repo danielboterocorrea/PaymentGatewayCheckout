@@ -120,7 +120,7 @@ namespace PaymentGateway.Api
             services.AddTransient<PaymentRepository>();
             services.AddTransient<ICurrencyRepository, CurrencyCacheRepository>();
             services.AddTransient<IMerchantRepository, MerchantCacheRepository>();
-            services.AddTransient<IPaymentRepository, PaymentRepository>();
+            services.AddTransient<IPaymentRepository, PaymentCacheRepository>();
             services.AddTransient<IPaymentToPaymentDetailResponse, PaymentToPaymentDetailResponse>();
             services.AddTransient<IPaymentRequestToPayment, PaymentRequestToPayment>(ps =>
             {

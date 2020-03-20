@@ -48,7 +48,7 @@ namespace PaymentGateway.Infrastructure.Repositories.Cache
             }
         }
 
-        public void UpdateOrCreate<T>(string key, T value)
+        public void UpdateOrCreate<T>(string key, T value, int timePersistenceSeconds = 300)
         {
             lock (_locker)
             {
@@ -63,7 +63,7 @@ namespace PaymentGateway.Infrastructure.Repositories.Cache
                 _logger.LogDebug($"Setting key: {key}, value: {value}");
 
                 MemoryCacheEntryOptions cacheExpirationOptions = new MemoryCacheEntryOptions();
-                cacheExpirationOptions.AbsoluteExpiration = DateTime.Now.AddMinutes(5);
+                cacheExpirationOptions.AbsoluteExpiration = DateTime.Now.AddSeconds(timePersistenceSeconds);
                 cacheExpirationOptions.Priority = CacheItemPriority.Normal;
 
                 _cache.Set(key, value, cacheExpirationOptions);
