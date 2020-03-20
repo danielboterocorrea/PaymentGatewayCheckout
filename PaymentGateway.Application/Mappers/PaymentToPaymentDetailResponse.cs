@@ -19,7 +19,8 @@ namespace PaymentGateway.Application.Mappers
                 {
                     Number = CreditCard.MaskNumber(payment.CreditCard.Number),
                     ExpirationDate = payment.CreditCard.ExpirationDate,
-                    Cvv = payment.CreditCard.Cvv,
+                    //We don't return the actual Cvv
+                    Cvv = 000,
                     HolderName = payment.CreditCard.HolderName
                 },
                 Currency = payment.Currency.Value,

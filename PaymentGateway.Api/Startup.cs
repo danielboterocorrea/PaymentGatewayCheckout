@@ -27,6 +27,8 @@ using PaymentGateway.Infrastructure.DatabaseModels;
 using PaymentGateway.Infrastructure.Repositories;
 using PaymentGateway.Infrastructure.Repositories.Cache;
 using PaymentGateway.Infrastructure.Toolbox;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.Swagger;
 
 namespace PaymentGateway.Api
 {
@@ -43,9 +45,15 @@ namespace PaymentGateway.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddHttpClient();
-            services.AddDistributedMemoryCache();
             services.AddHttpContextAccessor();
             services.AddMemoryCache();
+
+            services.Configure<CookiePolicyOptions>(options =>
+            {
+                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
+                options.CheckConsentNeeded = context => true;
+                options.MinimumSameSitePolicy = Microsoft.AspNetCore.Http.SameSiteMode.None;
+            });
 
             services.AddDbContext<PaymentGatewayContext>(optionsBuilder => 
                    optionsBuilder.UseInMemoryDatabase(databaseName: "PaymentGatewayInMemoryDatabase"));
@@ -97,7 +105,55 @@ namespace PaymentGateway.Api
             services.AddTransient<IPaymentService, PaymentService>();
 
             services.AddControllers();
-            services.AddMvc();
+
+            string authority = "https://localhost:5002";
+            //IdentityServer4
+            services.AddAuthentication("Bearer")
+                .AddJwtBearer("Bearer", options =>
+                {
+                    //TODO: Get this from the configuration
+                    options.Authority = authority;
+                    options.RequireHttpsMetadata = true;
+
+                    options.Audience = "PaymentGatewayApi";
+                });
+
+            // Register the Swagger generator, defining 1 or more Swagger documents
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "PaymentGateway API", Version = "v1" });
+                c.AddSecurityDefinition("ResourceOwner", new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Query,
+                    OpenIdConnectUrl = new Uri($"{authority}/.well-known/openid-configuration"),
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.OAuth2,
+                    Scheme = "bearer",
+                    Flows = new OpenApiOAuthFlows
+                    {
+                        Password = new OpenApiOAuthFlow
+                        {
+                            AuthorizationUrl = new Uri($"{authority}/connect/authorize", UriKind.Absolute),
+                            TokenUrl = new Uri($"{authority}/connect/token", UriKind.Absolute),
+                            Scopes = new Dictionary<string, string>
+                            {
+                                { "PaymentGatewayApi", "PaymentGatewayApi" }
+                            }
+                        }
+                    }
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement{
+                {
+                    new OpenApiSecurityScheme{
+                        Reference = new OpenApiReference{
+                            Id = "ResourceOwner", //The name of the previously defined security scheme.
+                            Type = ReferenceType.SecurityScheme
+                        }
+                    },new List<string>()
+                }
+            });
+            });
         }
 
         public void EnsureDatabaseIsSeeded(IApplicationBuilder applicationBuilder)
@@ -114,16 +170,35 @@ namespace PaymentGateway.Api
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            // Enable middleware to serve generated Swagger as a JSON endpoint.
+            app.UseSwagger();
+
+            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
+            // specifying the Swagger JSON endpoint.
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+                c.RoutePrefix = string.Empty;
+                c.OAuthClientId("SwaggerApi");
+                c.OAuthClientSecret("7da3e461-a80e-4e02-a968-e21e255c4ec6");
+                c.OAuthAppName("PaymentGateway Api");
+                c.OAuth2RedirectUrl("https://localhost:44346/index.html");
+                c.OAuthUseBasicAuthenticationWithAccessCodeGrant();
+                c.InjectJavascript("OAuthHelper.js");
+            });
+
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
-                EnsureDatabaseIsSeeded(app);
+                app.UseDeveloperExceptionPage();                
             }
+
+            EnsureDatabaseIsSeeded(app);
 
             app.UseHttpsRedirection();
 
             app.UseRouting();
-
+            app.UseStaticFiles();
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
