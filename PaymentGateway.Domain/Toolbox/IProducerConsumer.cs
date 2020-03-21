@@ -6,7 +6,6 @@ namespace PaymentGateway.Application.Toolbox.Interfaces
 {
     public interface IProducerConsumer<T> : IDisposable where T : IGetId
     {
-        void EnqueuePayment(T request);
-        Task Consume();
+        void EnqueueItem(T request);
     }
 }

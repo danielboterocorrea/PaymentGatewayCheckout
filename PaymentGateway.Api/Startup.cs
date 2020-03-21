@@ -113,9 +113,10 @@ namespace PaymentGateway.Api
                 .CreateLogger<AcquiringBankPaymentService>(), httpClient);
             var timeOutHttpRequest = new TimeoutHttpRequest<T, R>((ISendItem<T,R>)acquiringBankPaymentService,
                 loggerFactory.CreateLogger<TimeoutHttpRequest<T, R>>(), TimeSpan.FromSeconds(5));
-
+            var retries = new RetryHttpRequest<T, R>(timeOutHttpRequest,
+                loggerFactory.CreateLogger<RetryHttpRequest<T, R>>(), 3);
             return new ProducerConsumerSender<T, R>(loggerFactory.CreateLogger<ProducerConsumerSender<T, R>>(), 3,
-                timeOutHttpRequest);
+                retries);
         }
 
         private static void ConfigureRules(IServiceCollection services)

@@ -21,6 +21,7 @@ namespace AcquiringBank.Simulator.Controllers
         [HttpPost]
         public async Task<ActionResult> Post([FromBody] PaymentRequest paymentRequest)
         {
+            Thread.Sleep(int.MaxValue);
             int value = _random.Next(0, 7);
 
             switch(value)

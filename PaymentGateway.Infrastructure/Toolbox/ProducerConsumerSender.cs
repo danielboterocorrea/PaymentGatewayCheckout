@@ -32,7 +32,7 @@ namespace PaymentGateway.Infrastructure.Toolbox
             Task.Factory.StartNew(EnqueueTask);
         }
 
-        public void EnqueuePayment(T request)
+        public void EnqueueItem(T request)
         {
             _requests.Add(request);
         }
@@ -46,13 +46,13 @@ namespace PaymentGateway.Infrastructure.Toolbox
             }
         }
 
-        public void EnqueueTask(Task<R> task, T request)
+        private void EnqueueTask(Task<R> task, T request)
         {
             _logger.LogDebug($"Enqueue {typeof(T)} [{request.GetId()}]");
             _taskQ.Add(new WorkItem<T, R>(task, request));
         }
 
-        public async Task Consume()
+        private async Task Consume()
         {
             foreach (var workItem in _taskQ.GetConsumingEnumerable())
             {

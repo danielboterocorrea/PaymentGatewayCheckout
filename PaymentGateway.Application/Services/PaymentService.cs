@@ -38,7 +38,7 @@ namespace PaymentGateway.Application.Services
 
         public void OnProcessSuccessAsync(PaymentRequest paymentRequest)
         {
-            _producerConsumer.EnqueuePayment(paymentRequest);
+            _producerConsumer.EnqueueItem(paymentRequest);
         }
 
         public async Task<Payment> RetrieveAsync(Guid id)
