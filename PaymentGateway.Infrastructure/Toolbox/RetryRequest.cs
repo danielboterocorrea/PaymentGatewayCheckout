@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 
 namespace PaymentGateway.Infrastructure.Toolbox
 {
-    public class RetryHttpRequest<T, R> : ISendItem<T, R> where T : IGetId
+    public class RetryRequest<T, R> : ISendItem<T, R> where T : IGetId
     {
         private readonly ISendItem<T, R> _sendService;
-        private readonly ILogger<RetryHttpRequest<T, R>> _logger;
+        private readonly ILogger<RetryRequest<T, R>> _logger;
         private readonly int _retries;
-        public RetryHttpRequest(ISendItem<T, R> sendService,
-            ILogger<RetryHttpRequest<T, R>> logger, int retries)
+        public RetryRequest(ISendItem<T, R> sendService,
+            ILogger<RetryRequest<T, R>> logger, int retries)
         {
             _sendService = sendService;
             _logger = logger;
@@ -24,7 +24,7 @@ namespace PaymentGateway.Infrastructure.Toolbox
         {
             int tryNumber = 0;
 
-            _logger.LogInformation($"TimeoutHttpRequest SendAsync for {typeof(T)} [{item.GetId()}]");
+            _logger.LogInformation($"{nameof(RetryRequest<T, R>)} SendAsync for {typeof(T)} [{item.GetId()}]");
 
             while (true)
             {
@@ -36,11 +36,11 @@ namespace PaymentGateway.Infrastructure.Toolbox
                 {
                     if (tryNumber >= _retries)
                     {
-                        _logger.LogInformation(ex, $"Something went wrong in RetryHttpRequest, check the {nameof(RetryRequestException)}");
+                        _logger.LogError(ex, $"Something went wrong in RetryHttpRequest, check the {nameof(RetryRequestException)}");
                         throw new RetryRequestException($"Request retries [{_retries}] exceeded for {typeof(T)} [{item.GetId()}");
                     }
-
                     tryNumber++;
+                    _logger.LogInformation($"Retry number[{tryNumber}] for {typeof(T)} [{item.GetId()}]");
                 }
             }
         }

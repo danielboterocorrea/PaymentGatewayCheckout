@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 
 namespace PaymentGateway.Infrastructure.Toolbox
 {
-    public class TimeoutHttpRequest<T, R> : ISendItem<T, R> where T : IGetId
+    public class TimeoutRequest<T, R> : ISendItem<T, R> where T : IGetId
     {
         private readonly ISendItem<T, R> _sendService;
-        private readonly ILogger<TimeoutHttpRequest<T, R>> _logger;
+        private readonly ILogger<TimeoutRequest<T, R>> _logger;
         private readonly TimeSpan _timeout;
-        public TimeoutHttpRequest(ISendItem<T, R> sendService,
-            ILogger<TimeoutHttpRequest<T, R>> logger, TimeSpan timeout)
+        public TimeoutRequest(ISendItem<T, R> sendService,
+            ILogger<TimeoutRequest<T, R>> logger, TimeSpan timeout)
         {
             _sendService = sendService;
             _logger = logger;
@@ -25,7 +25,7 @@ namespace PaymentGateway.Infrastructure.Toolbox
             var cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSource.CancelAfter(_timeout);
 
-            _logger.LogInformation($"TimeoutHttpRequest SendAsync for {typeof(T)} [{item.GetId()}]");
+            _logger.LogInformation($"{nameof(TimeoutRequest<T, R>)} SendAsync for {typeof(T)} [{item.GetId()}]");
 
             try
             {

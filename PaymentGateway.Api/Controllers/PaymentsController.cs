@@ -51,6 +51,10 @@ namespace PaymentGateway.Api.Controllers
 
             sw.Stop();
             _metricsTime.RecordTime(MetricsTimeData.TimePaymentsRetrieved, sw.Elapsed);
+
+            if (payment == null)
+                return NotFound(ApiReponseActionResult.CreateNotFoundResponse(id));
+
             return Ok(ApiReponseActionResult.CreateResponse(
                     _paymentToPaymentDetailResponse.Map(payment),
                     ControllerName));

@@ -34,7 +34,9 @@ namespace PaymentGateway.Infrastructure.Repositories.Cache
             }
 
             var currencyFromDb = await _currencyRepository.GetByAsync(value);
-            _cache.UpdateOrCreate(key, currencyFromDb);
+            if(currencyFromDb != null)
+                _cache.UpdateOrCreate(key, currencyFromDb);
+
             return currencyFromDb;
         }
     }

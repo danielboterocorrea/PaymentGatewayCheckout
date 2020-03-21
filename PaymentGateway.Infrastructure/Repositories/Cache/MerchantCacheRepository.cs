@@ -34,7 +34,8 @@ namespace PaymentGateway.Infrastructure.Repositories.Cache
             }
 
             var merchantFromDb = await _merchantRepository.GetByAsync(value);
-            _cache.UpdateOrCreate(key, merchantFromDb);
+            if(merchantFromDb != null)
+                _cache.UpdateOrCreate(key, merchantFromDb);
 
             return merchantFromDb;
         }

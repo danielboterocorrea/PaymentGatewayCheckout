@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using PaymentGateway.Application.ResponseModels;
+using PaymentGateway.Domain.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,6 +43,18 @@ namespace PaymentGateway.Api.Helpers
                             Href = $"{controller}/{id}"
                         }
                     }
+                }
+            };
+        }
+
+        public static ApiResponse CreateNotFoundResponse(Guid id)
+        {
+            return new ApiResponse
+            {
+                ErrorType = StatusCode.Failure.ToString(),
+                ErrorCodes = new List<string>()
+                {
+                    CommonStatusCode.NotFound.ToString()
                 }
             };
         }

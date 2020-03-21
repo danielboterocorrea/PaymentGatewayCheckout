@@ -40,7 +40,8 @@ namespace PaymentGateway.Infrastructure.Repositories.Cache
             }
 
             var paymentFromDb = await _paymentRepository.GetAsync(id);
-            _cache.UpdateOrCreate(key, paymentFromDb, 30);
+            if(paymentFromDb != null)
+                _cache.UpdateOrCreate(key, paymentFromDb, 30);
             return paymentFromDb;
         }
     }
