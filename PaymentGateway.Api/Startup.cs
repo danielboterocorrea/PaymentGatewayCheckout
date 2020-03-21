@@ -7,7 +7,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Http;
 using PaymentGateway.Application.Mapper;
 using PaymentGateway.Application.Mappers;
 using PaymentGateway.Application.Mappers.Interfaces;
@@ -30,6 +29,8 @@ using PaymentGateway.Domain.Metrics;
 using PaymentGateway.Infrastructure.Metrics;
 using PaymentGateway.Application.Toolbox.Interfaces;
 using System.Net.Http;
+using PaymentGateway.Application.RequestModels;
+using PaymentGateway.Application.ResponseModels;
 
 namespace PaymentGateway.Api
 {
@@ -97,19 +98,24 @@ namespace PaymentGateway.Api
             services.AddTransient<ICryptor>(sp => new Cryptor("d09e0b5a-7cb0-4ae5-9598-80ce6a8f0f4b"));
             services.AddSingleton<IGatewayCache, InMemoryGatewayCache>();
             services.AddTransient<IDateTimeProvider, DateTimeProvider>();
-            services.AddSingleton<IProducerConsumer>(ps =>
+            services.AddSingleton<IProducerConsumer<PaymentRequest>>(ps =>
             {
-                var loggerFactory = (ILoggerFactory)ps.GetService(typeof(ILoggerFactory));
-                var httpClientFactory = (IHttpClientFactory)ps.GetService(typeof(IHttpClientFactory));
-                var httpClient = httpClientFactory.CreateClient();
-                var acquiringBankPaymentService = new AcquiringBankPaymentService(loggerFactory
-                    .CreateLogger<AcquiringBankPaymentService>(), httpClient);
-                var timeOutHttpRequest = new TimeoutHttpRequest(acquiringBankPaymentService,
-                    loggerFactory.CreateLogger<TimeoutHttpRequest>(), TimeSpan.FromSeconds(5));
-
-                return new ProducerConsumerSender(loggerFactory.CreateLogger<ProducerConsumerSender>(), 3,
-                    timeOutHttpRequest);
+                return GetProducerConsumerSender<PaymentRequest, AcquiringBankPaymentResponse>(ps);
             });
+        }
+
+        private static ProducerConsumerSender<T,R> GetProducerConsumerSender<T, R>(IServiceProvider sp) where T : IGetId
+        {
+            var loggerFactory = (ILoggerFactory)sp.GetService(typeof(ILoggerFactory));
+            var httpClientFactory = (IHttpClientFactory)sp.GetService(typeof(IHttpClientFactory));
+            var httpClient = httpClientFactory.CreateClient();
+            var acquiringBankPaymentService = new AcquiringBankPaymentService(loggerFactory
+                .CreateLogger<AcquiringBankPaymentService>(), httpClient);
+            var timeOutHttpRequest = new TimeoutHttpRequest<T, R>((ISendItem<T,R>)acquiringBankPaymentService,
+                loggerFactory.CreateLogger<TimeoutHttpRequest<T, R>>(), TimeSpan.FromSeconds(5));
+
+            return new ProducerConsumerSender<T, R>(loggerFactory.CreateLogger<ProducerConsumerSender<T, R>>(), 3,
+                timeOutHttpRequest);
         }
 
         private static void ConfigureRules(IServiceCollection services)

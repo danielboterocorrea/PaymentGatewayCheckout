@@ -1,6 +1,4 @@
-﻿using PaymentGateway.Application.RequestModels;
-using PaymentGateway.Application.ResponseModels;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
 namespace PaymentGateway.Application.Toolbox.Interfaces

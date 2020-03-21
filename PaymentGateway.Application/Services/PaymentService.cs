@@ -15,12 +15,12 @@ namespace PaymentGateway.Application.Services
         private readonly IPaymentRepository _paymentRepository;
         private readonly IPaymentRequestToPayment _paymentRequestToPayment;
         private readonly ILogger<PaymentService> _logger;
-        private readonly IProducerConsumer _producerConsumer;
+        private readonly IProducerConsumer<PaymentRequest> _producerConsumer;
 
         public PaymentService(IPaymentRepository paymentRepository,
             IPaymentRequestToPayment paymentRequestToPayment,
             ILogger<PaymentService> logger,
-            IProducerConsumer producerConsumer)
+            IProducerConsumer<PaymentRequest> producerConsumer)
         {
             _paymentRepository = paymentRepository;
             _paymentRequestToPayment = paymentRequestToPayment;

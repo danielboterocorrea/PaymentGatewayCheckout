@@ -1,8 +1,9 @@
-﻿using System;
+﻿using PaymentGateway.Application.Toolbox.Interfaces;
+using System;
 
 namespace PaymentGateway.Application.RequestModels
 {
-    public class PaymentRequest
+    public class PaymentRequest : IGetId
     {
         public Guid Id { get; set; }
         public MerchantInfo Merchant { get; set; }
@@ -13,6 +14,11 @@ namespace PaymentGateway.Application.RequestModels
         public PaymentRequest()
         {
             Id = Guid.NewGuid();
+        }
+
+        public Guid GetId()
+        {
+            return Id;
         }
     }
 }

@@ -204,7 +204,7 @@ namespace PaymentGateway.SharedTests
         public static PaymentService GetPaymentService()
         {
             var logger = new NullLogger<PaymentService>();
-            var producerConsumer = new Mock<IProducerConsumer>();
+            var producerConsumer = new Mock<IProducerConsumer<PaymentRequest>>();
             var cryptor = GetCryptor();
             var paymentRepository = new PaymentRepository(cryptor, GetPaymentGatewayContext());
             return new PaymentService(paymentRepository, GetPaymentRequestToPayment(), logger, producerConsumer.Object);

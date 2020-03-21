@@ -2,9 +2,7 @@
 using Newtonsoft.Json;
 using PaymentGateway.Application.RequestModels;
 using PaymentGateway.Application.ResponseModels;
-using PaymentGateway.Application.Services.Interfaces;
 using PaymentGateway.Application.Toolbox.Interfaces;
-using System;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -12,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace PaymentGateway.Application.Services
 {
-    public class AcquiringBankPaymentService : ISendItem
+    public class AcquiringBankPaymentService : ISendItem<PaymentRequest, AcquiringBankPaymentResponse>
     {
         private readonly ILogger<AcquiringBankPaymentService> _logger;
         private readonly HttpClient _httpClient;
