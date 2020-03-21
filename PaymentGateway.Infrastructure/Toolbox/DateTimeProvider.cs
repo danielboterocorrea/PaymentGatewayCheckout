@@ -1,7 +1,5 @@
 ﻿using PaymentGateway.Domain.Toolbox;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace PaymentGateway.Infrastructure.Toolbox
 {

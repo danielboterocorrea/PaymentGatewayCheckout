@@ -1,15 +1,11 @@
 ﻿using FluentAssertions;
 using NUnit.Framework;
 using PaymentGateway.Application.Mapper;
-using PaymentGateway.Application.Services;
 using PaymentGateway.Application.Specifications;
 using PaymentGateway.Domain.Exceptions;
-using PaymentGateway.Domain.Model;
 using PaymentGateway.Domain.Specifications;
 using PaymentGateway.SharedTests;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 
 namespace PaymentGateway.IntegrationTests.Application

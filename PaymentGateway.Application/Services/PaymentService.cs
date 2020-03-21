@@ -4,8 +4,6 @@ using PaymentGateway.Application.RequestModels;
 using PaymentGateway.Application.Services.Interfaces;
 using PaymentGateway.Domain.Repositories;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using PaymentGateway.Domain.Validators;
 using PaymentGateway.Application.Mappers.Interfaces;
 using Microsoft.Extensions.Logging;
 using PaymentGateway.Application.Toolbox.Interfaces;
@@ -38,12 +36,9 @@ namespace PaymentGateway.Application.Services
             return payment.Id;
         }
 
-        public Task OnProcessSuccessAsync(PaymentRequest paymentRequest)
+        public void OnProcessSuccessAsync(PaymentRequest paymentRequest)
         {
-            return _producerConsumer.EnqueueTask(() =>
-            {
-                _logger.LogInformation($"Sending payment {paymentRequest.Id} to Acquiring Bank");
-            });
+            _producerConsumer.EnqueuePayment(paymentRequest);
         }
 
         public async Task<Payment> RetrieveAsync(Guid id)

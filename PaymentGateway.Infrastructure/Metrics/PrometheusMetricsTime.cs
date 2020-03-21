@@ -1,7 +1,5 @@
 ﻿using PaymentGateway.Domain.Metrics;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using Prometheus;
 
 namespace PaymentGateway.Infrastructure.Metrics

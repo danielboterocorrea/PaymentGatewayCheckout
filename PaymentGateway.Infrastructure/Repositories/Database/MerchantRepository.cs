@@ -2,9 +2,6 @@
 using PaymentGateway.Domain.Model;
 using PaymentGateway.Domain.Repositories;
 using PaymentGateway.Infrastructure.DatabaseModels;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
 

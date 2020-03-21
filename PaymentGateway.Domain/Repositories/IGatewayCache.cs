@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace PaymentGateway.Domain.Repositories
+﻿namespace PaymentGateway.Domain.Repositories
 {
     public interface IGatewayCache
     {

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace PaymentGateway.Application.RequestModels
+﻿namespace PaymentGateway.Application.RequestModels
 {
     public class MerchantInfo
     {

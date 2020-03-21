@@ -1,10 +1,8 @@
-﻿using PaymentGateway.Domain.Exceptions;
-using PaymentGateway.Domain.Toolbox.Interfaces;
+﻿using PaymentGateway.Domain.Toolbox.Interfaces;
 using PaymentGateway.Domain.Validators;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace PaymentGateway.Domain.Model
 {

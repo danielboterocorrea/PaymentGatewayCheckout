@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace PaymentGateway.Domain.Toolbox.Interfaces
+﻿namespace PaymentGateway.Domain.Toolbox.Interfaces
 {
     public interface ICryptor
     {

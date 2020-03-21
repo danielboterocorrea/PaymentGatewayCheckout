@@ -2,8 +2,6 @@
 using Microsoft.Extensions.Logging;
 using PaymentGateway.Domain.Repositories;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace PaymentGateway.Infrastructure.Repositories.Cache
 {

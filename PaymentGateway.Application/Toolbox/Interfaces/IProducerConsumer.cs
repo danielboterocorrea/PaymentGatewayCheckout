@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
+﻿using PaymentGateway.Application.RequestModels;
+using System;
 using System.Threading.Tasks;
 
 namespace PaymentGateway.Application.Toolbox.Interfaces
 {
-    public interface IProducerConsumer : IDisposable
+    public interface IProducerConsumer<T> : IDisposable where T : IGetId
     {
-        Task EnqueueTask(Action action, CancellationToken? cancelToken = null);
-        void Consume();
+        void EnqueuePayment(T request);
+        Task Consume();
     }
 }

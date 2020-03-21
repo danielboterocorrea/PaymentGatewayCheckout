@@ -1,18 +1,15 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using PaymentGateway.Application.ResponseModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
-using System.Threading.Tasks;
 
 namespace PaymentGateway.Api.Helpers
 {
     public class ApiResponse
     {
-        [JsonProperty(PropertyName = "data", NullValueHandling = NullValueHandling.Ignore)]
-        public object Data { get; set; }
+        [JsonProperty(PropertyName = "result", NullValueHandling = NullValueHandling.Ignore)]
+        public object Result { get; set; }
         [JsonProperty(PropertyName = "_links", NullValueHandling = NullValueHandling.Ignore)]
         public List<Links> Links { get; set; }
         [JsonProperty(PropertyName = "error_type", NullValueHandling = NullValueHandling.Ignore)]
@@ -36,7 +33,7 @@ namespace PaymentGateway.Api.Helpers
         {
             return new ApiResponse
             {
-                Data = new { Id = id },
+                Result = new { Id = id },
                 Links = new List<Links>
                 {
                     new Links
@@ -53,7 +50,7 @@ namespace PaymentGateway.Api.Helpers
         {
             return new ApiResponse
             {
-                Data = payment,
+                Result = payment,
                 Links = new List<Links>
                 {
                     new Links

@@ -4,7 +4,6 @@ using PaymentGateway.Domain.Toolbox;
 using PaymentGateway.Domain.Validators;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Moq;
 using PaymentGateway.Domain.Model;
 using FluentAssertions;

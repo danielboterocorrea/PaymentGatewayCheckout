@@ -1,8 +1,5 @@
 ﻿using PaymentGateway.Domain.Model;
 using PaymentGateway.Domain.Toolbox.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace PaymentGateway.Infrastructure.Repositories.Mappers
 {

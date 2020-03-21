@@ -1,24 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using PaymentGateway.Api.Helpers;
 using PaymentGateway.Application.Mappers.Interfaces;
 using PaymentGateway.Application.RequestModels;
-using PaymentGateway.Application.ResponseModels;
 using PaymentGateway.Application.Services.Interfaces;
-using PaymentGateway.Application.Toolbox.Interfaces;
 using PaymentGateway.Domain.Exceptions;
 using PaymentGateway.Domain.Metrics;
-using PaymentGateway.Domain.Repositories;
-using PaymentGateway.Domain.Validators;
-using Prometheus;
 
 namespace PaymentGateway.Api.Controllers
 {
@@ -81,7 +73,7 @@ namespace PaymentGateway.Api.Controllers
                     _logger.LogInformation($"Payment passed validations [Id: {paymentRequest}]");
                 }
                 _logger.LogInformation($"Start executing on process success");
-                await _paymentService.OnProcessSuccessAsync(paymentRequest);
+                _paymentService.OnProcessSuccessAsync(paymentRequest);
                 _logger.LogInformation($"Stop executing on process success");
             }
             catch(InvalidPaymentRequestException invalidPaymentRequestException)

@@ -1,16 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Http;
 using PaymentGateway.Application.Mapper;
 using PaymentGateway.Application.Mappers;
 using PaymentGateway.Application.Mappers.Interfaces;
@@ -32,9 +29,7 @@ using Prometheus;
 using PaymentGateway.Domain.Metrics;
 using PaymentGateway.Infrastructure.Metrics;
 using PaymentGateway.Application.Toolbox.Interfaces;
-using PaymentGateway.Application.Toolbox;
-using Serilog.Core;
-using Serilog;
+using System.Net.Http;
 
 namespace PaymentGateway.Api
 {
@@ -105,7 +100,15 @@ namespace PaymentGateway.Api
             services.AddSingleton<IProducerConsumer>(ps =>
             {
                 var loggerFactory = (ILoggerFactory)ps.GetService(typeof(ILoggerFactory));
-                return new PaymentProducerConsumer(loggerFactory.CreateLogger<PaymentProducerConsumer>(), 3);
+                var httpClientFactory = (IHttpClientFactory)ps.GetService(typeof(IHttpClientFactory));
+                var httpClient = httpClientFactory.CreateClient();
+                var acquiringBankPaymentService = new AcquiringBankPaymentService(loggerFactory
+                    .CreateLogger<AcquiringBankPaymentService>(), httpClient);
+                var timeOutHttpRequest = new TimeoutHttpRequest(acquiringBankPaymentService,
+                    loggerFactory.CreateLogger<TimeoutHttpRequest>(), TimeSpan.FromSeconds(5));
+
+                return new ProducerConsumerSender(loggerFactory.CreateLogger<ProducerConsumerSender>(), 3,
+                    timeOutHttpRequest);
             });
         }
 

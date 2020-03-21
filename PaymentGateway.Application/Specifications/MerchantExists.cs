@@ -1,9 +1,6 @@
 ﻿using PaymentGateway.Domain.Model;
 using PaymentGateway.Domain.Repositories;
 using PaymentGateway.Domain.Validators;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace PaymentGateway.Application.Specifications

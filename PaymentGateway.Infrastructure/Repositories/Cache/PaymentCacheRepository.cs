@@ -2,8 +2,6 @@
 using PaymentGateway.Domain.Model;
 using PaymentGateway.Domain.Repositories;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace PaymentGateway.Infrastructure.Repositories.Cache

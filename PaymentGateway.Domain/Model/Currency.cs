@@ -1,11 +1,4 @@
-﻿using PaymentGateway.Domain.Repositories;
-using PaymentGateway.Domain.Validators;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace PaymentGateway.Domain.Model
+﻿namespace PaymentGateway.Domain.Model
 {
     public class Currency
     {
