@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace PaymentGateway.Domain.Model
+namespace PaymentGateway.Domain.Common
 {
     public enum CommonStatusCode
     {

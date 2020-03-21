@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using AcquiringBank.Simulator.RequestModels;
 using AcquiringBank.Simulator.ResponseModels;
 using Microsoft.AspNetCore.Mvc;
+using AcquiringBank.Simulator.Common;
 
 namespace AcquiringBank.Simulator.Controllers
 {
@@ -42,14 +43,14 @@ namespace AcquiringBank.Simulator.Controllers
                     {
                         Id = Guid.NewGuid(),
                         PaymentId = paymentRequest.Id,
-                        StatusCode = "Success",
+                        StatusCode = Common.StatusCode.Success.ToString()
                     });
                 case 3:
                     return Ok(new PaymentReponse
                     {
                         Id = Guid.NewGuid(),
                         PaymentId = paymentRequest.Id,
-                        StatusCode = "Fail",
+                        StatusCode = Common.StatusCode.Failure.ToString(),
                         Reason = "Have no enough money"
                     });
                 case 4:
@@ -57,7 +58,7 @@ namespace AcquiringBank.Simulator.Controllers
                     {
                         Id = Guid.NewGuid(),
                         PaymentId = paymentRequest.Id,
-                        StatusCode = "Fail",
+                        StatusCode = Common.StatusCode.Failure.ToString(),
                         Reason = "Looks like this is a fraudulent transaction"
                     });
                 case 5:

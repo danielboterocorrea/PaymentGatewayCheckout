@@ -1,5 +1,6 @@
 ﻿using PaymentGateway.Application.Mappers.Interfaces;
 using PaymentGateway.Application.RequestModels;
+using PaymentGateway.Domain.Common;
 using PaymentGateway.Domain.Exceptions;
 using PaymentGateway.Domain.Model;
 using PaymentGateway.Domain.Validators;

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using PaymentGateway.Domain.Toolbox.Interfaces;
 using PaymentGateway.Infrastructure.Repositories.Mappers;
+using PaymentGateway.Domain.Common;
 
 namespace PaymentGateway.Infrastructure.Repositories
 {
@@ -59,6 +60,21 @@ namespace PaymentGateway.Infrastructure.Repositories
                 CreditCardMapper.From(_cryptor, tpayment.CreditCard), 
                 tpayment.Amount, CurrencyMapper.From(tpayment.Currency), 
                 (StatusCode)Enum.Parse(typeof(StatusCode), tpayment.StatusCode));
+        }
+
+        public async Task UpdateAsync(Payment payment)
+        {
+            var tpayment = await(from paymentDb in _unitOfWork.Payments
+                                 .Include(p => p.Merchant)
+                                 .Include(p => p.Currency)
+                                 where paymentDb.Id == payment.Id
+                                 select paymentDb).FirstOrDefaultAsync();
+
+            tpayment.StatusCode = payment.StatusCode.ToString();
+            tpayment.Reason = payment.Reason;
+
+            _unitOfWork.Payments.Update(tpayment);
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

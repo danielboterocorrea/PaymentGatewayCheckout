@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 using PaymentGateway.Application.ResponseModels;
-using PaymentGateway.Domain.Model;
+using PaymentGateway.Domain.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;

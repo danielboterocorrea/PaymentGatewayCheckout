@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PaymentGateway.Domain.Common;
+using System;
 
 namespace PaymentGateway.Domain.Model
 {
@@ -10,7 +11,6 @@ namespace PaymentGateway.Domain.Model
         public decimal Amount { get; }
         public Currency Currency { get; }
         public StatusCode StatusCode { get; private set; }
-
         public string Reason { get; private set; }
 
         public Payment(Guid id, Merchant merchant, CreditCard creditCard, decimal amount, Currency currency, StatusCode statusCode)

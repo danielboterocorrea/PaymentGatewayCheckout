@@ -7,7 +7,7 @@ namespace PaymentGateway.Domain.Repositories
     public interface IPaymentRepository
     {
         Task AddAsync(Payment payment);
-
         Task<Payment> GetAsync(Guid id);
+        Task UpdateAsync(Payment payment);
     }
 }

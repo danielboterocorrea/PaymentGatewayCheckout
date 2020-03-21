@@ -3,6 +3,9 @@ using Newtonsoft.Json;
 using PaymentGateway.Application.RequestModels;
 using PaymentGateway.Application.ResponseModels;
 using PaymentGateway.Application.Toolbox.Interfaces;
+using PaymentGateway.Domain.Common;
+using PaymentGateway.Domain.Repositories;
+using System;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -14,11 +17,14 @@ namespace PaymentGateway.Application.Services
     {
         private readonly ILogger<AcquiringBankPaymentService> _logger;
         private readonly HttpClient _httpClient;
+        private readonly IPaymentRepository _paymentRepository;
 
-        public AcquiringBankPaymentService(ILogger<AcquiringBankPaymentService> logger, HttpClient httpClient)
+        public AcquiringBankPaymentService(ILogger<AcquiringBankPaymentService> logger, 
+            HttpClient httpClient, IPaymentRepository paymentRepository)
         {
             _logger = logger;
             _httpClient = httpClient;
+            _paymentRepository = paymentRepository;
         }
 
         public async Task<AcquiringBankPaymentResponse> SendAsync(PaymentRequest paymentRequest, CancellationToken cancellationToken)
@@ -49,7 +55,10 @@ namespace PaymentGateway.Application.Services
         private async Task UpdatePayment(AcquiringBankPaymentResponse response, PaymentRequest paymentRequest)
         {
             _logger.LogInformation($"Updating Payment [{paymentRequest.Id}] to AcquiringBank succeed");
-            //TODO: UpdatePayment
+            var payment = await _paymentRepository.GetAsync(response.PaymentId);
+            payment.ChangeStatus((StatusCode)Enum.Parse(typeof(StatusCode), response.StatusCode),
+                response.Reason);
+            await _paymentRepository.UpdateAsync(payment);
         }
     }
 }

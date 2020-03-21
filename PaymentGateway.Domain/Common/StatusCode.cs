@@ -1,4 +1,4 @@
-﻿namespace PaymentGateway.Domain.Model
+﻿namespace PaymentGateway.Domain.Common
 {
     public enum StatusCode
     {
