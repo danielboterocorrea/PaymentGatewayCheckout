@@ -16,17 +16,17 @@ namespace PaymentGateway.IntegrationTests.Application
         [SetUp]
         public void SetUp()
         {
-            TestsHelper.DeleteTables(TestsHelper.GetPaymentGatewayContext());
+            SharedTestsHelper.DeleteTables(SharedTestsHelper.GetPaymentGatewayContext());
         }
 
         [Test]
         public void PaymentRequestToPaymentValidDataTest()
         {
-            var paymentRequest = TestsHelper.GetValidPaymentRequest();
-            var paymentRequestToPayment = new PaymentRequestToPayment(TestsHelper.GetCreditCardRules(),
-                TestsHelper.GetPaymentAmountRules(),
-                TestsHelper.GetMerchantRule(),
-                TestsHelper.GetCurrencyRule());
+            var paymentRequest = SharedTestsHelper.GetValidPaymentRequest();
+            var paymentRequestToPayment = new PaymentRequestToPayment(SharedTestsHelper.GetCreditCardRules(),
+                SharedTestsHelper.GetPaymentAmountRules(),
+                SharedTestsHelper.GetMerchantRule(),
+                SharedTestsHelper.GetCurrencyRule());
 
             var payment = paymentRequestToPayment.MapAsync(paymentRequest).GetAwaiter().GetResult();
 
@@ -53,11 +53,11 @@ namespace PaymentGateway.IntegrationTests.Application
         [Test]
         public void PaymentRequestToPaymentInvalidDataTest()
         {
-            var paymentRequest = TestsHelper.GetInvalidPaymentRequest();
-            var paymentRequestToPayment = new PaymentRequestToPayment(TestsHelper.GetCreditCardRules(),
-                TestsHelper.GetPaymentAmountRules(),
-                TestsHelper.GetMerchantRule(),
-                TestsHelper.GetCurrencyRule());
+            var paymentRequest = SharedTestsHelper.GetInvalidPaymentRequest();
+            var paymentRequestToPayment = new PaymentRequestToPayment(SharedTestsHelper.GetCreditCardRules(),
+                SharedTestsHelper.GetPaymentAmountRules(),
+                SharedTestsHelper.GetMerchantRule(),
+                SharedTestsHelper.GetCurrencyRule());
 
             Assert.Throws<InvalidPaymentRequestException>(() =>
             {
@@ -68,8 +68,8 @@ namespace PaymentGateway.IntegrationTests.Application
         [Test]
         public void PaymentRequestToPaymentInvalidDataMessagesTest()
         {
-            var paymentRequest = TestsHelper.GetInvalidPaymentRequest();
-            var paymentRequestToPayment = TestsHelper.GetPaymentRequestToPayment();
+            var paymentRequest = SharedTestsHelper.GetInvalidPaymentRequest();
+            var paymentRequestToPayment = SharedTestsHelper.GetPaymentRequestToPayment();
 
             try
             {
@@ -95,8 +95,8 @@ namespace PaymentGateway.IntegrationTests.Application
         {
             Assert.Throws<InvalidPaymentRequestException>(() =>
             {
-                var paymentService = TestsHelper.GetPaymentService();
-                paymentService.ProcessAsync(TestsHelper.GetInvalidPaymentRequest()).GetAwaiter().GetResult();
+                var paymentService = SharedTestsHelper.GetPaymentService();
+                paymentService.ProcessAsync(SharedTestsHelper.GetInvalidPaymentRequest()).GetAwaiter().GetResult();
             }, $"Should throw {nameof(InvalidPaymentRequestException)}");
         }
 
@@ -104,15 +104,15 @@ namespace PaymentGateway.IntegrationTests.Application
         public void ProcessPaymentValidCardMessageTest()
         {
 
-            var paymentService = TestsHelper.GetPaymentService();
-            var paymentRequest = TestsHelper.GetValidPaymentRequest();
+            var paymentService = SharedTestsHelper.GetPaymentService();
+            var paymentRequest = SharedTestsHelper.GetValidPaymentRequest();
             var Guid = paymentService.ProcessAsync(paymentRequest).GetAwaiter().GetResult();
 
             Guid.Should().Be(paymentRequest.Id);
             
-            TestsHelper.DetachObjectFromDb(TestsHelper.GetPaymentGatewayContext());
+            SharedTestsHelper.DetachObjectFromDb(SharedTestsHelper.GetPaymentGatewayContext());
 
-            TestsHelper.PaymentExists(Guid).Should().BeTrue();
+            SharedTestsHelper.PaymentExists(Guid).Should().BeTrue();
         }
     }
 }

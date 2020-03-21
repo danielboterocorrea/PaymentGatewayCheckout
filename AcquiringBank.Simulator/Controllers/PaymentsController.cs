@@ -17,6 +17,13 @@ namespace AcquiringBank.Simulator.Controllers
         {
             _random = random;
         }
+        // GET: api/Payments
+        [HttpGet]
+        public async Task<ActionResult> Get()
+        {
+            return Ok();
+        }
+
         // POST: api/Payments
         [HttpPost]
         public async Task<ActionResult> Post([FromBody] PaymentRequest paymentRequest)

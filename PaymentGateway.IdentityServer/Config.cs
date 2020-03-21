@@ -44,19 +44,6 @@ namespace PaymentGateway.IdentityServer
                     },
                     AllowedScopes = { "PaymentGatewayApi" }
                 },
-                //new Client
-                //{
-                //    ClientId = "SwaggerApi",
-                //    ClientSecrets = {
-                //        new Secret("7da3e461-a80e-4e02-a968-e21e255c4ec6")
-                //    },
-                //    RequireClientSecret = true,
-                //    AllowedGrantTypes = GrantTypes.Implicit,
-                //    RequirePkce = true,
-                //    AllowedScopes = { "PaymentGatewayApi" },
-                //    RedirectUris = {"https://localhost:44346/index.html"},
-                //    AllowAccessTokensViaBrowser = true;
-                //}
                 new Client
                 {
                     ClientId = "SwaggerApi",

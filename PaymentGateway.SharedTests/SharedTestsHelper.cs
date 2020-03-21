@@ -1,4 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using IdentityModel.Client;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using PaymentGateway.Application.Mapper;
@@ -14,13 +20,16 @@ using PaymentGateway.Domain.Validators;
 using PaymentGateway.Infrastructure;
 using PaymentGateway.Infrastructure.DatabaseModels;
 using PaymentGateway.Infrastructure.Repositories;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace PaymentGateway.SharedTests
 {
-    public class TestsHelper
+    public class SharedTestsHelper
     {
         public static CreditCard GetValidCreditCard()
         {
@@ -235,6 +244,49 @@ namespace PaymentGateway.SharedTests
             unitOfWork.Payments.RemoveRange(unitOfWork.Payments);
             unitOfWork.SaveChanges();
             DetachObjectFromDb(unitOfWork);
+        }
+
+        public static void LaunchIdentityServer()
+        {
+            Task.Factory.StartNew(() =>
+            {
+                Host.CreateDefaultBuilder()
+                .UseSerilog()
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder
+                    .UseUrls("https://*:5002", "http://*:5003")
+                    .UseStartup<IdentityServer.Startup>();
+                }).Build().Run();
+            });
+        }
+
+        public static string GetAccessToken()
+        {
+            var identityServerFactory = new WebApplicationFactory<IdentityServer.Startup>();
+            var identityClient = identityServerFactory.CreateClient();
+            identityClient.BaseAddress = new Uri("https://localhost:5002");
+            var disco = identityClient.GetDiscoveryDocumentAsync("https://localhost:5002").GetAwaiter().GetResult();
+            if (disco.IsError)
+            {
+                throw new Exception("IdentityServer not found");
+            }
+
+            // request token
+            var tokenResponse = identityClient.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
+            {
+                Address = disco.TokenEndpoint,
+                ClientId = "Apple",
+                ClientSecret = "678ebc03-8fb1-407f-ac5e-ff97e8b810f5",
+                Scope = "PaymentGatewayApi"
+            }).GetAwaiter().GetResult();
+
+            if (tokenResponse.IsError)
+            {
+                throw new Exception(tokenResponse.Error);
+            }
+
+            return tokenResponse.AccessToken;
         }
     }
 }

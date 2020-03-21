@@ -1,18 +1,21 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using PaymentGateway.Api;
 using PaymentGateway.Application.Mapper;
 using PaymentGateway.Application.Mappers;
 using PaymentGateway.Application.Mappers.Interfaces;
+using PaymentGateway.Application.RequestModels;
+using PaymentGateway.Application.ResponseModels;
 using PaymentGateway.Application.Services;
 using PaymentGateway.Application.Services.Interfaces;
 using PaymentGateway.Application.Specifications;
+using PaymentGateway.Application.Toolbox.Interfaces;
+using PaymentGateway.Domain.Metrics;
 using PaymentGateway.Domain.Repositories;
 using PaymentGateway.Domain.Specifications;
 using PaymentGateway.Domain.Toolbox;
@@ -20,31 +23,32 @@ using PaymentGateway.Domain.Toolbox.Interfaces;
 using PaymentGateway.Domain.Validators;
 using PaymentGateway.Infrastructure;
 using PaymentGateway.Infrastructure.DatabaseModels;
+using PaymentGateway.Infrastructure.Metrics;
 using PaymentGateway.Infrastructure.Repositories;
 using PaymentGateway.Infrastructure.Repositories.Cache;
 using PaymentGateway.Infrastructure.Toolbox;
-using Microsoft.OpenApi.Models;
-using Prometheus;
-using PaymentGateway.Domain.Metrics;
-using PaymentGateway.Infrastructure.Metrics;
-using PaymentGateway.Application.Toolbox.Interfaces;
+using Serilog;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
-using PaymentGateway.Application.RequestModels;
-using PaymentGateway.Application.ResponseModels;
+using System.Text;
 
-namespace PaymentGateway.Api
+namespace PaymentGateway.IntegrationTests
 {
-    public class Startup
+    public class FakePaymentGatewayApiStartup : Startup
     {
-        public Startup(IConfiguration configuration)
+        public FakePaymentGatewayApiStartup(IConfiguration configuration) : base(configuration)
         {
-            Configuration = configuration;
+            //Configuring Serilog logging
+            Log.Logger = new LoggerConfiguration()
+                .ReadFrom
+                .Configuration(configuration)
+                .CreateLogger();
         }
 
-        public IConfiguration Configuration { get; }
-
         // This method gets called by the runtime. Use this method to add services to the container.
-        public virtual void ConfigureServices(IServiceCollection services)
+        public override void ConfigureServices(IServiceCollection services)
         {
             services.AddHttpClient();
             services.AddHttpContextAccessor();
@@ -58,7 +62,7 @@ namespace PaymentGateway.Api
             });
 
             services.AddDbContext<PaymentGatewayContext>(optionsBuilder =>
-                   optionsBuilder.UseInMemoryDatabase(databaseName: "PaymentGatewayInMemoryDatabase"));
+                   optionsBuilder.UseInMemoryDatabase(databaseName: "PaymentGatewayInMemoryDatabaseTests"));
 
             ConfigureRepositories(services);
             ConfigureRules(services);
@@ -74,7 +78,6 @@ namespace PaymentGateway.Api
 
             ConfigureIdentityServer(services, authority);
 
-            ConfigureSwagger(services, authority);
         }
 
         private static void ConfigureMetrics(IServiceCollection services)
@@ -104,14 +107,14 @@ namespace PaymentGateway.Api
             });
         }
 
-        private static ProducerConsumerSender<T,R> GetProducerConsumerSender<T, R>(IServiceProvider sp) where T : IGetId
+        private static ProducerConsumerSender<T, R> GetProducerConsumerSender<T, R>(IServiceProvider sp) where T : IGetId
         {
             var loggerFactory = (ILoggerFactory)sp.GetService(typeof(ILoggerFactory));
             var httpClientFactory = (IHttpClientFactory)sp.GetService(typeof(IHttpClientFactory));
             var httpClient = httpClientFactory.CreateClient();
             var acquiringBankPaymentService = new AcquiringBankPaymentService(loggerFactory
                 .CreateLogger<AcquiringBankPaymentService>(), httpClient);
-            var timeOutHttpRequest = new TimeoutRequest<T, R>((ISendItem<T,R>)acquiringBankPaymentService,
+            var timeOutHttpRequest = new TimeoutRequest<T, R>((ISendItem<T, R>)acquiringBankPaymentService,
                 loggerFactory.CreateLogger<TimeoutRequest<T, R>>(), TimeSpan.FromSeconds(5));
             var retries = new RetryRequest<T, R>(timeOutHttpRequest,
                 loggerFactory.CreateLogger<RetryRequest<T, R>>(), 3);
@@ -164,7 +167,7 @@ namespace PaymentGateway.Api
 
         private static void ConfigureIdentityServer(IServiceCollection services, string authority)
         {
-            
+
             //IdentityServer4
             services.AddAuthentication("Bearer")
                 .AddJwtBearer("Bearer", options =>
@@ -177,78 +180,12 @@ namespace PaymentGateway.Api
                 });
         }
 
-        private static void ConfigureSwagger(IServiceCollection services, string authority)
-        {
-            // Register the Swagger generator, defining 1 or more Swagger documents
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "PaymentGateway API", Version = "v1" });
-                c.AddSecurityDefinition("ResourceOwner", new OpenApiSecurityScheme
-                {
-                    In = ParameterLocation.Query,
-                    OpenIdConnectUrl = new Uri($"{authority}/.well-known/openid-configuration"),
-                    Name = "Authorization",
-                    Type = SecuritySchemeType.OAuth2,
-                    Scheme = "bearer",
-                    Flows = new OpenApiOAuthFlows
-                    {
-                        Password = new OpenApiOAuthFlow
-                        {
-                            AuthorizationUrl = new Uri($"{authority}/connect/authorize", UriKind.Absolute),
-                            TokenUrl = new Uri($"{authority}/connect/token", UriKind.Absolute),
-                            Scopes = new Dictionary<string, string>
-                            {
-                                { "PaymentGatewayApi", "PaymentGatewayApi" }
-                            }
-                        }
-                    }
-                });
-
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement{
-                {
-                    new OpenApiSecurityScheme{
-                        Reference = new OpenApiReference{
-                            Id = "ResourceOwner", //The name of the previously defined security scheme.
-                            Type = ReferenceType.SecurityScheme
-                        }
-                    },new List<string>()
-                }});
-            });
-        }
-
-        public void EnsureDatabaseIsSeeded(IApplicationBuilder applicationBuilder)
-        {
-            // seed the database using an extension method
-            using (var serviceScope = applicationBuilder.ApplicationServices
-           .GetRequiredService<IServiceScopeFactory>().CreateScope())
-            {
-                var context = serviceScope.ServiceProvider.GetService<PaymentGatewayContext>();
-                DatabaseSeeding.Initialize(serviceScope.ServiceProvider);
-            }
-        }
-
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public virtual void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public override void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            // Enable middleware to serve generated Swagger as a JSON endpoint.
-            app.UseSwagger();
-
-            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
-            // specifying the Swagger JSON endpoint.
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "PaymentGatewayApi V1");
-                c.RoutePrefix = string.Empty;
-                c.OAuthClientId("SwaggerApi");
-                c.OAuthClientSecret("7da3e461-a80e-4e02-a968-e21e255c4ec6");
-                c.OAuthAppName("PaymentGateway Api");
-                c.OAuth2RedirectUrl("https://localhost:44346/index.html");
-                c.OAuthUseBasicAuthenticationWithAccessCodeGrant();
-            });
-
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();                
+                app.UseDeveloperExceptionPage();
             }
 
             EnsureDatabaseIsSeeded(app);
@@ -260,7 +197,6 @@ namespace PaymentGateway.Api
             app.UseStaticFiles();
             app.UseAuthentication();
             app.UseAuthorization();
-            app.UseMetricServer();
 
             app.UseEndpoints(endpoints =>
             {
