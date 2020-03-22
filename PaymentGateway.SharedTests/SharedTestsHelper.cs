@@ -1,13 +1,17 @@
-﻿using IdentityModel.Client;
+﻿using AcquiringBank.Simulator.Common;
+using AcquiringBank.Simulator.ResponseModels;
+using IdentityModel.Client;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using Newtonsoft.Json;
 using PaymentGateway.Application.Mapper;
 using PaymentGateway.Application.RequestModels;
 using PaymentGateway.Application.Services;
+using PaymentGateway.Application.Services.Interfaces;
 using PaymentGateway.Application.Specifications;
 using PaymentGateway.Domain.Model;
 using PaymentGateway.Domain.Specifications;
@@ -17,10 +21,15 @@ using PaymentGateway.Domain.Validators;
 using PaymentGateway.Infrastructure;
 using PaymentGateway.Infrastructure.DatabaseModels;
 using PaymentGateway.Infrastructure.Repositories;
+using PaymentGateway.Infrastructure.Repositories.Cache;
+using PaymentGateway.Infrastructure.Toolbox;
 using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PaymentGateway.SharedTests
@@ -146,18 +155,14 @@ namespace PaymentGateway.SharedTests
             return new CurrencyExists(currencyRepository);
         }
 
-        private static PaymentGatewayContext PaymentGatewayContext = null;
         public static PaymentGatewayContext GetPaymentGatewayContext()
         {
-            if (PaymentGatewayContext == null)
-            {
-                PaymentGatewayContext = new PaymentGatewayContext(new DbContextOptionsBuilder<PaymentGatewayContext>()
-                   .UseInMemoryDatabase(databaseName: "PaymentGatewayInMemoryDatabaseTests")
-                   .Options);
+            var paymentGatewayContext = new PaymentGatewayContext(new DbContextOptionsBuilder<PaymentGatewayContext>()
+                .UseInMemoryDatabase(databaseName: "PaymentGatewayInMemoryDatabaseTests")
+                .Options);
 
-                DatabaseSeeding(PaymentGatewayContext);
-            }
-            return PaymentGatewayContext;
+            DatabaseSeeding(paymentGatewayContext);
+            return paymentGatewayContext;
         }
 
         private static void DatabaseSeeding(PaymentGatewayContext context)
@@ -201,9 +206,20 @@ namespace PaymentGateway.SharedTests
             context.SaveChanges();
         }
 
+        public static InMemoryQueue<PaymentRequest> GetInMemoryQueue()
+        {
+            return new InMemoryQueue<PaymentRequest>();
+        }
+
         public static ICryptor GetCryptor()
         {
             return new Cryptor("b8f73557-fa21-4d5a-9cfe-ec5e29c3d340");
+        }
+
+        public static InMemoryGatewayCache GetCache()
+        {
+            var logger = new NullLogger<InMemoryGatewayCache>();
+            return new InMemoryGatewayCache(logger);
         }
 
         public static PaymentRequestToPayment GetPaymentRequestToPayment()
@@ -214,10 +230,77 @@ namespace PaymentGateway.SharedTests
                 GetCurrencyRule());
         }
 
-        public static PaymentService GetPaymentService()
+        public static PaymentService GetPaymentService(PaymentGatewayContext paymentGatewayContext, IPublisher<PaymentRequest> producerConsumer)
         {
             var logger = new NullLogger<PaymentService>();
-            var queryProvider = new Mock<Application.Services.Interfaces.IPublisher<PaymentRequest>>();
+            var cryptor = GetCryptor();
+            var paymentRepository = new PaymentRepository(cryptor, paymentGatewayContext);
+            return new PaymentService(paymentRepository, GetPaymentRequestToPayment(), logger, producerConsumer);
+        }
+
+        public static HttpClient GetHttpClientAcquiringSimulatorMockedFailure(Guid paymentRequestId)
+        {
+            return GetHttpClient(new PaymentReponse
+            {
+                Id = Guid.NewGuid(),
+                PaymentId = paymentRequestId,
+                StatusCode = StatusCode.Failure.ToString()
+            });
+        }
+
+        public static HttpClient GetHttpClientAcquiringSimulatorMockedSuccess(Guid paymentRequestId)
+        {
+            return GetHttpClient(new PaymentReponse
+            {
+                Id = Guid.NewGuid(),
+                PaymentId = paymentRequestId,
+                StatusCode = StatusCode.Success.ToString()
+            });
+        }
+
+        public static HttpClient GetHttpClient(PaymentReponse response)
+        {
+            var body = JsonConvert.SerializeObject(response);
+            var httpClient = new Mock<HttpClient>();
+            var responseMessage = new HttpResponseMessage();
+            responseMessage.StatusCode = System.Net.HttpStatusCode.OK;
+            var httpContent = new StringContent(body, Encoding.UTF8, "application/json");
+            responseMessage.Content = httpContent;
+            httpClient.Setup(cli =>
+                    cli.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
+                    .Returns(Task.FromResult(responseMessage));
+
+            return httpClient.Object;
+        }
+
+        public static ISendItem<T, R> GetSendPayment<T, R>(HttpClient httpClient) where T : IGetId
+        {
+            var cryptor = GetCryptor();
+            var cache = GetCache();
+            var context = GetPaymentGatewayContext();
+            var paymentRepository = new PaymentCacheRepository(new Infrastructure.Repositories.PaymentRepository(cryptor, context),
+                TestLogger.Create<PaymentCacheRepository>(), cache);
+            var acquiringBankPaymentService = new AcquiringBankPaymentService(TestLogger.Create<AcquiringBankPaymentService>(),
+                httpClient, paymentRepository);
+            var timeOutHttpRequest = new TimeoutRequest<T, R>((ISendItem<T, R>)acquiringBankPaymentService,
+                TestLogger.Create<TimeoutRequest<T, R>>(), TimeSpan.FromSeconds(20));
+            var retries = new RetryRequest<T, R>(timeOutHttpRequest,
+                TestLogger.Create<RetryRequest<T, R>>(), 3);
+
+            return retries;
+        }
+        
+        //PaymentRequest, AcquiringBankPaymentResponse
+        public static ConsumerSender<T, R> GetProducerConsumerSender<T, R>(HttpClient httpClient, IQueueProvider<T> producerConsumer) where T : IGetId
+        {
+            var retries = GetSendPayment<T, R>(httpClient);
+            return new ConsumerSender<T, R>(TestLogger.Create<ConsumerSender<T, R>>(), 3, retries, (IQueueProvider<T>)producerConsumer);
+        }
+
+        public static PaymentService GetPaymentServiceWithMockedPublisher()
+        {
+            var logger = new NullLogger<PaymentService>();
+            var queryProvider = new Mock<IPublisher<PaymentRequest>>();
             var cryptor = GetCryptor();
             var paymentRepository = new PaymentRepository(cryptor, GetPaymentGatewayContext());
             return new PaymentService(paymentRepository, GetPaymentRequestToPayment(), logger, queryProvider.Object);
@@ -229,6 +312,15 @@ namespace PaymentGateway.SharedTests
                            .Payments.AsNoTracking()
                             where tPayment.Id == id
                             select tPayment).Count() == 1;
+        }
+
+        public static bool PaymentExistsWithStatusCode(Guid id, Domain.Common.StatusCode statusCode)
+        {
+            return (from tPayment in GetPaymentGatewayContext()
+                           .Payments.AsNoTracking()
+                    where tPayment.Id == id
+                    && tPayment.StatusCode == statusCode.ToString()
+                    select tPayment).Count() == 1;
         }
 
         //https://blog.goyello.com/2011/11/23/entity-framework-invalid-operation/

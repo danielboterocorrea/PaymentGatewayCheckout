@@ -1,4 +1,4 @@
-﻿using PaymentGateway.Application.Toolbox.Interfaces;
+﻿using PaymentGateway.Domain.Toolbox;
 using System;
 
 namespace PaymentGateway.Application.RequestModels

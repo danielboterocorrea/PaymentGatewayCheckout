@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
-using PaymentGateway.Application.Toolbox.Interfaces;
+using PaymentGateway.Application.Services.Interfaces;
 using PaymentGateway.Domain.Exceptions;
+using PaymentGateway.Domain.Toolbox;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

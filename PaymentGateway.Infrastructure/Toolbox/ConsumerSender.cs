@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using PaymentGateway.Application.Services.Interfaces;
-using PaymentGateway.Application.Toolbox.Interfaces;
+using PaymentGateway.Domain.Toolbox;
 using System;
 using System.Collections.Concurrent;
 using System.Threading;

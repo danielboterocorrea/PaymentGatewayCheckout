@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PaymentGateway.Application.Toolbox.Interfaces
+namespace PaymentGateway.Domain.Toolbox
 {
     public interface IGetId
     {

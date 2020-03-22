@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using PaymentGateway.Application.RequestModels;
 using PaymentGateway.Application.ResponseModels;
-using PaymentGateway.Application.Toolbox.Interfaces;
+using PaymentGateway.Application.Services.Interfaces;
 using PaymentGateway.Domain.Common;
 using PaymentGateway.Domain.Repositories;
 using System;

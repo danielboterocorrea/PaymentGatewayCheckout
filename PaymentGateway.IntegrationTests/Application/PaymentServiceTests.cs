@@ -95,7 +95,7 @@ namespace PaymentGateway.IntegrationTests.Application
         {
             Assert.Throws<InvalidPaymentRequestException>(() =>
             {
-                var paymentService = SharedTestsHelper.GetPaymentService();
+                var paymentService = SharedTestsHelper.GetPaymentServiceWithMockedPublisher();
                 paymentService.ProcessAsync(SharedTestsHelper.GetInvalidPaymentRequest()).GetAwaiter().GetResult();
             }, $"Should throw {nameof(InvalidPaymentRequestException)}");
         }
@@ -104,7 +104,7 @@ namespace PaymentGateway.IntegrationTests.Application
         public void ProcessPaymentValidCardMessageTest()
         {
 
-            var paymentService = SharedTestsHelper.GetPaymentService();
+            var paymentService = SharedTestsHelper.GetPaymentServiceWithMockedPublisher();
             var paymentRequest = SharedTestsHelper.GetValidPaymentRequest();
             var Guid = paymentService.ProcessAsync(paymentRequest).GetAwaiter().GetResult();
 

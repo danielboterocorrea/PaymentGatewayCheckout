@@ -27,7 +27,6 @@ using Microsoft.OpenApi.Models;
 using Prometheus;
 using PaymentGateway.Domain.Metrics;
 using PaymentGateway.Infrastructure.Metrics;
-using PaymentGateway.Application.Toolbox.Interfaces;
 using System.Net.Http;
 using PaymentGateway.Application.RequestModels;
 using PaymentGateway.Application.ResponseModels;
@@ -98,7 +97,6 @@ namespace PaymentGateway.Api
                 var cryptor = (ICryptor)sp.GetService(typeof(ICryptor));
                 var httpClientFactory = (IHttpClientFactory)sp.GetService(typeof(IHttpClientFactory));
                 var gatewayCache = (IGatewayCache)sp.GetService(typeof(IGatewayCache));
-                //var paymentRepository = (IPaymentRepository)sp.GetService(typeof(IPaymentRepository));
                 var paymentRepository = new PaymentCacheRepository(new PaymentRepository(cryptor, GetLongRunningContext()),
                     loggerFactory.CreateLogger<PaymentCacheRepository>(), gatewayCache);
                 var httpClient = httpClientFactory.CreateClient();
@@ -127,10 +125,6 @@ namespace PaymentGateway.Api
             services.AddTransient<ICryptor>(sp => new Cryptor("d09e0b5a-7cb0-4ae5-9598-80ce6a8f0f4b"));
             services.AddSingleton<IGatewayCache, InMemoryGatewayCache>();
             services.AddTransient<IDateTimeProvider, DateTimeProvider>();
-            //services.AddScoped(sp =>
-            //{
-            //    return GetProducerConsumerSender<PaymentRequest, AcquiringBankPaymentResponse>(sp);
-            //});
 
         }
 
@@ -150,7 +144,7 @@ namespace PaymentGateway.Api
         {
             var loggerFactory = (ILoggerFactory)sp.GetService(typeof(ILoggerFactory));
             var retries = GetSendPayment<T, R>(sp);
-            var inMemoryQueue = (IQueueProvider<T>)sp.GetService(typeof(IPublisher<T>));
+            var inMemoryQueue = (IQueueProvider<T>)sp.GetService(typeof(IQueueProvider<T>));
             return new ConsumerSender<T, R>(loggerFactory.CreateLogger<ConsumerSender<T, R>>(), 3,
                 retries, inMemoryQueue);
         }
