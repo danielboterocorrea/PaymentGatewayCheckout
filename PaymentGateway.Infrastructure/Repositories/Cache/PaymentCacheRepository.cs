@@ -2,6 +2,7 @@
 using PaymentGateway.Domain.Model;
 using PaymentGateway.Domain.Repositories;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace PaymentGateway.Infrastructure.Repositories.Cache
@@ -24,6 +25,11 @@ namespace PaymentGateway.Infrastructure.Repositories.Cache
         public async Task AddAsync(Payment payment)
         {
             await _paymentRepository.AddAsync(payment);
+        }
+
+        public async Task<IList<Payment>> GetAsync()
+        {
+            return await _paymentRepository.GetAsync();
         }
 
         public async Task<Payment> GetAsync(Guid id)

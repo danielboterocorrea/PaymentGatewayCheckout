@@ -47,12 +47,12 @@ namespace PaymentGateway.Application.Services
             if (result.IsSuccessStatusCode)
             {
                 response = JsonConvert.DeserializeObject<AcquiringBankPaymentResponse>(await result.Content.ReadAsStringAsync());
-                await UpdatePayment(response, paymentRequest);
+                await UpdatePaymentOnSuccess(response, paymentRequest);
             }
             return response;
         }
 
-        private async Task UpdatePayment(AcquiringBankPaymentResponse response, PaymentRequest paymentRequest)
+        private async Task UpdatePaymentOnSuccess(AcquiringBankPaymentResponse response, PaymentRequest paymentRequest)
         {
             _logger.LogInformation($"Updating Payment [{paymentRequest.Id}] to AcquiringBank succeed");
             var payment = await _paymentRepository.GetAsync(response.PaymentId);

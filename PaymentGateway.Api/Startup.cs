@@ -139,7 +139,7 @@ namespace PaymentGateway.Api
             var loggerFactory = (ILoggerFactory)sp.GetService(typeof(ILoggerFactory));
             var acquiringBankPaymentService = (AcquiringBankPaymentService)sp.GetService(typeof(AcquiringBankPaymentService));
             var timeOutHttpRequest = new TimeoutRequest<T, R>((ISendItem<T, R>)acquiringBankPaymentService,
-                loggerFactory.CreateLogger<TimeoutRequest<T, R>>(), TimeSpan.FromSeconds(5));
+                loggerFactory.CreateLogger<TimeoutRequest<T, R>>(), TimeSpan.FromSeconds(20));
             var retries = new RetryRequest<T, R>(timeOutHttpRequest,
                 loggerFactory.CreateLogger<RetryRequest<T, R>>(), 3);
 
@@ -259,7 +259,7 @@ namespace PaymentGateway.Api
            .GetRequiredService<IServiceScopeFactory>().CreateScope())
             {
                 var context = serviceScope.ServiceProvider.GetService<PaymentGatewayContext>();
-                DatabaseSeeding.Initialize(serviceScope.ServiceProvider);
+                DatabaseOperations.InitializeContext(serviceScope.ServiceProvider);
             }
         }
 

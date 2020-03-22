@@ -6,6 +6,7 @@ using PaymentGateway.Domain.Repositories;
 using System.Threading.Tasks;
 using PaymentGateway.Application.Mappers.Interfaces;
 using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
 
 namespace PaymentGateway.Application.Services
 {
@@ -43,6 +44,11 @@ namespace PaymentGateway.Application.Services
         public async Task<Payment> RetrieveAsync(Guid id)
         {
             return await _paymentRepository.GetAsync(id);
+        }
+
+        public async Task<IList<Payment>> RetrieveAllAsync()
+        {
+            return await _paymentRepository.GetAsync();
         }
     }
 }

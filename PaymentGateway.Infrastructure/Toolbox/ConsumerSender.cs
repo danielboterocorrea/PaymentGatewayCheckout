@@ -61,6 +61,8 @@ namespace PaymentGateway.Infrastructure.Toolbox
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, $"Error treating {typeof(T)} [{workItem.item.GetId()}]");
+                    _logger.LogError(ex, $"Enqueuing {typeof(T)} [{workItem.item.GetId()}] after failure");
+                    EnqueueTask(_sendPayment.SendAsync(workItem.item, _cancellationTokenSource.Token), workItem.item);
                 }
 
             }

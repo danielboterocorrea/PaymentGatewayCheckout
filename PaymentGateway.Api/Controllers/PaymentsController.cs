@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
 using Microsoft.AspNetCore.Authorization;
@@ -37,6 +38,16 @@ namespace PaymentGateway.Api.Controllers
             _logger = logger;
             _metricsTime = metricsTime;
             _metricsCounter = metricsCounter;
+        }
+
+        // GET: api/Payments
+        [HttpGet]
+        public async Task<ActionResult> Get()
+        {
+            var payments = await _paymentService.RetrieveAllAsync();
+            return Ok(payments
+                .Select(p =>  
+                ApiReponseActionResult.CreateResponse(_paymentToPaymentDetailResponse.Map(p), ControllerName)));
         }
 
         // GET: api/Payments/5

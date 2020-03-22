@@ -5,9 +5,9 @@ using System.Linq;
 
 namespace PaymentGateway.Infrastructure.DatabaseModels
 {
-    public class DatabaseSeeding
+    public static class DatabaseOperations
     {
-        public static void Initialize(IServiceProvider serviceProvider)
+        public static void InitializeContext(IServiceProvider serviceProvider)
         {
             using (var context = new PaymentGatewayContext(
                 serviceProvider.GetRequiredService<DbContextOptions<PaymentGatewayContext>>()))

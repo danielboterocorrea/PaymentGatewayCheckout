@@ -8,6 +8,7 @@ using System.Linq;
 using PaymentGateway.Domain.Toolbox.Interfaces;
 using PaymentGateway.Infrastructure.Repositories.Mappers;
 using PaymentGateway.Domain.Common;
+using System.Collections.Generic;
 
 namespace PaymentGateway.Infrastructure.Repositories
 {
@@ -47,7 +48,7 @@ namespace PaymentGateway.Infrastructure.Repositories
 
         public async Task<Payment> GetAsync(Guid id)
         {
-            var tpayment = await(from payment in _unitOfWork.Payments
+            var tpayment = await(from payment in _unitOfWork.Payments.AsNoTracking()
                                  .Include(p => p.Merchant)
                                  .Include(p => p.Currency)
                                  where payment.Id == id
@@ -56,25 +57,48 @@ namespace PaymentGateway.Infrastructure.Repositories
             if (tpayment == null)
                 return null;
 
+            return CreatePayment(tpayment);
+        }
+
+        public Payment CreatePayment(TPayment tpayment)
+        {
             return new Payment(tpayment.Id, MerchantMapper.From(tpayment.Merchant),
-                CreditCardMapper.From(_cryptor, tpayment.CreditCard), 
-                tpayment.Amount, CurrencyMapper.From(tpayment.Currency), 
+                CreditCardMapper.From(_cryptor, tpayment.CreditCard),
+                tpayment.Amount, CurrencyMapper.From(tpayment.Currency),
                 (StatusCode)Enum.Parse(typeof(StatusCode), tpayment.StatusCode));
         }
 
         public async Task UpdateAsync(Payment payment)
         {
-            var tpayment = await(from paymentDb in _unitOfWork.Payments
+            var tpayment = await(from paymentDb in _unitOfWork.Payments.AsNoTracking()
                                  .Include(p => p.Merchant)
                                  .Include(p => p.Currency)
                                  where paymentDb.Id == payment.Id
                                  select paymentDb).FirstOrDefaultAsync();
 
+            var local = _unitOfWork.Set<TPayment>().Local.FirstOrDefault(p => p.Id == payment.Id);
+            // check if local is not null 
+            if (local != null)
+            {
+                // detach
+                _unitOfWork.Entry(local).State = EntityState.Detached;
+            }
+            _unitOfWork.Entry(tpayment).State = EntityState.Modified;
+
             tpayment.StatusCode = payment.StatusCode.ToString();
             tpayment.Reason = payment.Reason;
-
             _unitOfWork.Payments.Update(tpayment);
             await _unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task<IList<Payment>> GetAsync()
+        {
+            var tpayments = await (from paymentDb in _unitOfWork.Payments.AsNoTracking()
+                                  .Include(p => p.Merchant)
+                                  .Include(p => p.Currency)
+                          select paymentDb).ToListAsync();
+
+            return tpayments.Select(tp => CreatePayment(tp)).ToList();
         }
     }
 }
