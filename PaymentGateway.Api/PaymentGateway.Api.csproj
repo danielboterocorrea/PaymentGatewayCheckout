@@ -16,6 +16,7 @@
     <PackageReference Include="prometheus-net.AspNetCore" Version="3.5.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="3.2.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
+    <PackageReference Include="serilog.sinks.graylog" Version="2.1.2" />
     <PackageReference Include="Serilog.Sinks.RollingFile" Version="3.3.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.1.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="5.1.0" />
@@ -25,6 +26,15 @@
     <ProjectReference Include="..\PaymentGateway.Application\PaymentGateway.Application.csproj" />
     <ProjectReference Include="..\PaymentGateway.Domain\PaymentGateway.Domain.csproj" />
     <ProjectReference Include="..\PaymentGateway.Infrastructure\PaymentGateway.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="appsettings.Development.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 

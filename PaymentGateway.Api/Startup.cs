@@ -296,14 +296,20 @@ namespace PaymentGateway.Api
 
             EnsureDatabaseIsSeeded(app);
 
+            app.UseMetricServer();
+
             //Do not redirect
             //app.UseHttpsRedirection();
 
             app.UseRouting();
-            app.UseStaticFiles();
+
+            app.UseStaticFiles(new StaticFileOptions()
+            {
+                ServeUnknownFileTypes = true
+            });
             app.UseAuthentication();
             app.UseAuthorization();
-            app.UseMetricServer();
+            
 
             app.UseEndpoints(endpoints =>
             {

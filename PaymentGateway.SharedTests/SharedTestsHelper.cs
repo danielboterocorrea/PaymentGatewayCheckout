@@ -216,7 +216,7 @@ namespace PaymentGateway.SharedTests
 
         public static ICryptor GetCryptor()
         {
-            return new Cryptor("b8f73557-fa21-4d5a-9cfe-ec5e29c3d340");
+            return new Cryptor(Configuration["PaymentGateway:CryptoSecret"]);
         }
 
         public static InMemoryGatewayCache GetCache()
@@ -276,13 +276,23 @@ namespace PaymentGateway.SharedTests
             return httpClient.Object;
         }
 
-        public static ISendItem<T, R> GetSendPayment<T, R>(HttpClient httpClient) where T : IGetId
-        {
-            var configuration = new ConfigurationBuilder()
+        private static IConfiguration configuration = null;
+        public static IConfiguration Configuration { get{
+            if(configuration == null)
+            {
+                configuration = new ConfigurationBuilder()
                 .SetBasePath(Path.Combine(AppContext.BaseDirectory))
                 .AddJsonFile($"appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.Testing.json", optional: false, reloadOnChange: true)
                 .Build();
+            }
+            return configuration;
+        }
+}
+
+        public static ISendItem<T, R> GetSendPayment<T, R>(HttpClient httpClient) where T : IGetId
+        {
+            
 
             var cryptor = GetCryptor();
             var cache = GetCache();
