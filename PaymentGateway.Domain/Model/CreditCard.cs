@@ -59,11 +59,8 @@ namespace PaymentGateway.Domain.Model
         {
             string creditCard = cryptor.Decrypt(cryptedValue);
             string[] creditCardValues = creditCard.Split('|');
-            //TODO: Create using the create method, an extra validation may be good
-            return new CreditCard(creditCardValues[0], 
-                DateTime.Parse(creditCardValues[1]), 
-                int.Parse(creditCardValues[2]), 
-                creditCardValues[3]);
+            return new CreditCard(creditCardValues[0], DateTime.Parse(creditCardValues[1]),
+                int.Parse(creditCardValues[2]), creditCardValues[3]);
         }
 
         public static string MaskNumber(string number)

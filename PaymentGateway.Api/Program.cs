@@ -13,6 +13,8 @@ namespace PaymentGateway.Api
 
         public static void Main(string[] args)
         {
+            Console.Title = "PaymentGateway.Api";
+
             var environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
             if (string.IsNullOrEmpty(environmentName))
@@ -36,7 +38,7 @@ namespace PaymentGateway.Api
             try
             {
                 Log.Information("Starting up");
-                CreateHostBuilder(args).Build().Run();
+                CreateHostBuilder(args, configuration["Ports:http"], configuration["Ports:https"]).Build().Run();
             }
             catch (Exception ex)
             {
@@ -48,13 +50,13 @@ namespace PaymentGateway.Api
             }
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
+        public static IHostBuilder CreateHostBuilder(string[] args, string httpPort, string httpsPort) =>
             Host.CreateDefaultBuilder(args)
                 .UseSerilog()
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder
-                    .UseUrls(new[] { "http://*:53746", "https://*:44346" })
+                    .UseUrls(new[] { $"http://*:{httpPort}", $"https://*:{httpsPort}" })
                     .UseStartup<Startup>();
                 });
     }

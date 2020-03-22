@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using PaymentGateway.Application.RequestModels;
 using PaymentGateway.Application.ResponseModels;
@@ -18,29 +19,29 @@ namespace PaymentGateway.Application.Services
         private readonly ILogger<AcquiringBankPaymentService> _logger;
         private readonly HttpClient _httpClient;
         private readonly IPaymentRepository _paymentRepository;
+        private readonly IConfiguration _configuration;
 
         public AcquiringBankPaymentService(ILogger<AcquiringBankPaymentService> logger, 
-            HttpClient httpClient, IPaymentRepository paymentRepository)
+            HttpClient httpClient, IPaymentRepository paymentRepository, IConfiguration configuration)
         {
             _logger = logger;
             _httpClient = httpClient;
             _paymentRepository = paymentRepository;
+            _configuration = configuration;
         }
 
         public async Task<AcquiringBankPaymentResponse> SendAsync(PaymentRequest paymentRequest, CancellationToken cancellationToken)
         {
             var body = JsonConvert.SerializeObject(paymentRequest);
             _logger.LogInformation($"Sending Payment request [{paymentRequest.Id}] to AcquiringBank");
-            // Wrap our JSON inside a StringContent which then can be used by the HttpClient class
             var httpContent = new StringContent(body, Encoding.UTF8, "application/json");
-            //TODO: hard coded url
-            var request = new HttpRequestMessage(HttpMethod.Post, "https://localhost:44398/api/Payments")
+            var request = new HttpRequestMessage(HttpMethod.Post, 
+                $"{_configuration["AcquiringBank.EndPoints:Host"]}{_configuration["AcquiringBank.EndPoints:Payments"]}")
             {
                 Content = httpContent
             };
             var result = await _httpClient.SendAsync(request, cancellationToken);
 
-            //Throws HttpRequestException when The HTTP response is unsuccessful.
             result.EnsureSuccessStatusCode();
             _logger.LogInformation($"Payment request [{paymentRequest.Id}] to AcquiringBank succeed");
             AcquiringBankPaymentResponse response  = null;

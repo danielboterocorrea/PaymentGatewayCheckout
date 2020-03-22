@@ -72,6 +72,7 @@ namespace Merchant.Simulator
 
         static async Task Main(string[] args)
         {
+            Console.Title = "Merchant.Simulator";
             //SequenceRequests();
             await ParallelRequests();
         }
@@ -109,7 +110,6 @@ namespace Merchant.Simulator
             var body = JsonConvert.SerializeObject(GetValidPaymentRequest());
             // Wrap our JSON inside a StringContent which then can be used by the HttpClient class
             var httpContent = new StringContent(body, Encoding.UTF8, "application/json");
-            //TODO: hard coded url
             var request = new HttpRequestMessage(HttpMethod.Post, "https://localhost:44346/api/Payments")
             {
                 Content = httpContent
@@ -157,7 +157,6 @@ namespace Merchant.Simulator
                 var body = JsonConvert.SerializeObject(GetValidPaymentRequest());
                 // Wrap our JSON inside a StringContent which then can be used by the HttpClient class
                 var httpContent = new StringContent(body, Encoding.UTF8, "application/json");
-                //TODO: hard coded url
                 var request = new HttpRequestMessage(HttpMethod.Post, "https://localhost:44346/api/Payments")
                 {
                     Content = httpContent

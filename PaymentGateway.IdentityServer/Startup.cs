@@ -25,22 +25,6 @@ namespace PaymentGateway.IdentityServer
             app.UseDeveloperExceptionPage();
             app.UseIdentityServer();
             IdentityModelEventSource.ShowPII = true;
-
-            //TODO: Remove comments
-            //if (env.IsDevelopment())
-            //{
-            //    app.UseDeveloperExceptionPage();
-            //}
-
-            //app.UseRouting();
-
-            //app.UseEndpoints(endpoints =>
-            //{
-            //    endpoints.MapGet("/", async context =>
-            //    {
-            //        await context.Response.WriteAsync("Hello World!");
-            //    });
-            //});
         }
     }
 }

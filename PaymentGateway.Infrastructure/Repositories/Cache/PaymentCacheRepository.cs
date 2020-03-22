@@ -12,7 +12,7 @@ namespace PaymentGateway.Infrastructure.Repositories.Cache
         private readonly ILogger<PaymentCacheRepository> _logger;
         private readonly IGatewayCache _cache;
         private readonly PaymentRepository _paymentRepository;
-
+        private static string KeyFormat = "Payment_{0}";
         public PaymentCacheRepository(PaymentRepository paymentRepository,
             ILogger<PaymentCacheRepository> logger,
             IGatewayCache cache)
@@ -34,7 +34,7 @@ namespace PaymentGateway.Infrastructure.Repositories.Cache
 
         public async Task<Payment> GetAsync(Guid id)
         {
-            string key = "Payment_" + id;
+            string key = string.Format(KeyFormat, id);
             _logger.LogInformation($"PaymentCacheRepository - GetByAsync({id})");
 
             var paymentExisted = _cache.TryGet(key, out Payment paymentCache);
@@ -53,8 +53,7 @@ namespace PaymentGateway.Infrastructure.Repositories.Cache
 
         public async Task UpdateAsync(Payment payment)
         {
-            //TODO: Create format, same in all cache repositories
-            string key = "Payment_" + payment.Id;
+            string key = string.Format(KeyFormat, payment.Id);
             _cache.Remove(key);
             await _paymentRepository.UpdateAsync(payment);
         }

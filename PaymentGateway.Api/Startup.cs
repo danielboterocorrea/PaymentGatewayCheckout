@@ -42,8 +42,7 @@ namespace PaymentGateway.Api
         }
 
         public IConfiguration Configuration { get; }
-        //TODO: From config
-        public virtual string DatabaseName => "PaymentGatewayInMemoryDatabase";
+        private string DatabaseName => Configuration["PaymentGateway:DatabaseName"];
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public virtual void ConfigureServices(IServiceCollection services)
@@ -71,8 +70,7 @@ namespace PaymentGateway.Api
             services.AddControllers()
                     .AddNewtonsoftJson();
 
-            //TODO: Configuration file
-            string authority = "https://localhost:5002";
+            string authority = Configuration["PaymentGateway:AuthorityServer"];
 
             ConfigureIdentityServer(services, authority);
 
@@ -90,6 +88,11 @@ namespace PaymentGateway.Api
         {
             //Services
             services.AddSingleton<IPublisher<PaymentRequest>, InMemoryQueue<PaymentRequest>>();
+            services.AddSingleton(sp =>
+            {
+                return (IQueueProvider<PaymentRequest>)sp.GetService(typeof(IPublisher<PaymentRequest>));
+            });
+            
             services.AddTransient<IPaymentService, PaymentService>();
             services.AddTransient(sp =>
             {
@@ -101,7 +104,7 @@ namespace PaymentGateway.Api
                     loggerFactory.CreateLogger<PaymentCacheRepository>(), gatewayCache);
                 var httpClient = httpClientFactory.CreateClient();
                 return new AcquiringBankPaymentService(loggerFactory.CreateLogger<AcquiringBankPaymentService>(),
-                    httpClient, paymentRepository);
+                    httpClient, paymentRepository,Configuration);
             });
         }
 
@@ -118,11 +121,10 @@ namespace PaymentGateway.Api
             return PaymentGatewayContextLongRunning;
         }
 
-        private static void ConfigureToolbox(IServiceCollection services)
+        private void ConfigureToolbox(IServiceCollection services)
         {
             //Toolbox
-            //TODO: Get this from the configuration
-            services.AddTransient<ICryptor>(sp => new Cryptor("d09e0b5a-7cb0-4ae5-9598-80ce6a8f0f4b"));
+            services.AddTransient<ICryptor>(sp => new Cryptor(Configuration["PaymentGateway:CryptoSecret"]));
             services.AddSingleton<IGatewayCache, InMemoryGatewayCache>();
             services.AddTransient<IDateTimeProvider, DateTimeProvider>();
 
@@ -199,7 +201,6 @@ namespace PaymentGateway.Api
             services.AddAuthentication("Bearer")
                 .AddJwtBearer("Bearer", options =>
                 {
-                    //TODO: Get this from the configuration
                     options.Authority = authority;
                     options.RequireHttpsMetadata = true;
 
@@ -282,7 +283,7 @@ namespace PaymentGateway.Api
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "PaymentGatewayApi V1");
                 c.RoutePrefix = string.Empty;
                 c.OAuthClientId("SwaggerApi");
-                c.OAuthClientSecret("7da3e461-a80e-4e02-a968-e21e255c4ec6");
+                c.OAuthClientSecret(Configuration["PaymentGatewaySwaggerSecret"]);
                 c.OAuthAppName("PaymentGateway Api");
                 c.OAuth2RedirectUrl("https://localhost:44346/index.html");
                 c.OAuthUseBasicAuthenticationWithAccessCodeGrant();

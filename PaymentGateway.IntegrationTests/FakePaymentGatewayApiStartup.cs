@@ -10,19 +10,7 @@ namespace PaymentGateway.IntegrationTests
     {
         public FakePaymentGatewayApiStartup(IConfiguration configuration) : base(configuration)
         {
-            var config = new ConfigurationBuilder()
-                .SetBasePath(Path.Combine(AppContext.BaseDirectory))
-                .AddJsonFile($"appsettings.json", optional: false, reloadOnChange: true)
-                .Build();
-
-            //Configuring Serilog logging
-            Log.Logger = new LoggerConfiguration()
-                .ReadFrom
-                .Configuration(config)
-                .CreateLogger();
         }
-
-        public override string DatabaseName => "PaymentGatewayInMemoryDatabaseTests";
 
         public override void LaunchConsumer(IServiceProvider serviceProvider)
         {

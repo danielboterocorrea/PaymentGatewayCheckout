@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using System;
 
 namespace AcquiringBank.Simulator
 {
@@ -7,6 +8,8 @@ namespace AcquiringBank.Simulator
     {
         public static void Main(string[] args)
         {
+            Console.Title = "AcquiringBank.Simulator";
+
             CreateHostBuilder(args).Build().Run();
         }
 

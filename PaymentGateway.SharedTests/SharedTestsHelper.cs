@@ -4,6 +4,7 @@ using IdentityModel.Client;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -26,6 +27,8 @@ using PaymentGateway.Infrastructure.Toolbox;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -275,13 +278,19 @@ namespace PaymentGateway.SharedTests
 
         public static ISendItem<T, R> GetSendPayment<T, R>(HttpClient httpClient) where T : IGetId
         {
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(Path.Combine(AppContext.BaseDirectory))
+                .AddJsonFile($"appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.Testing.json", optional: false, reloadOnChange: true)
+                .Build();
+
             var cryptor = GetCryptor();
             var cache = GetCache();
             var context = GetPaymentGatewayContext();
-            var paymentRepository = new PaymentCacheRepository(new Infrastructure.Repositories.PaymentRepository(cryptor, context),
+            var paymentRepository = new PaymentCacheRepository(new PaymentRepository(cryptor, context),
                 TestLogger.Create<PaymentCacheRepository>(), cache);
             var acquiringBankPaymentService = new AcquiringBankPaymentService(TestLogger.Create<AcquiringBankPaymentService>(),
-                httpClient, paymentRepository);
+                httpClient, paymentRepository, configuration);
             var timeOutHttpRequest = new TimeoutRequest<T, R>((ISendItem<T, R>)acquiringBankPaymentService,
                 TestLogger.Create<TimeoutRequest<T, R>>(), TimeSpan.FromSeconds(20));
             var retries = new RetryRequest<T, R>(timeOutHttpRequest,
@@ -290,7 +299,6 @@ namespace PaymentGateway.SharedTests
             return retries;
         }
         
-        //PaymentRequest, AcquiringBankPaymentResponse
         public static ConsumerSender<T, R> GetProducerConsumerSender<T, R>(HttpClient httpClient, IQueueProvider<T> producerConsumer) where T : IGetId
         {
             var retries = GetSendPayment<T, R>(httpClient);

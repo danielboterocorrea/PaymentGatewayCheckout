@@ -17,18 +17,10 @@ namespace PaymentGateway.IdentityServer
         {
             Console.Title = "PaymentGateway.IdentityServer";
 
-            var environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-
-            if (string.IsNullOrEmpty(environmentName))
-            {
-                throw new ArgumentNullException("Environment ASPNETCORE_ENVIRONMENT variable is missing");
-            }
-
             //Getting configuration from appsettings
             configuration = new ConfigurationBuilder()
                 .SetBasePath(Path.Combine(AppContext.BaseDirectory))
                 .AddJsonFile($"appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{environmentName}.json", optional: false, reloadOnChange: true)
                 .Build();
 
             //Configuring Serilog logging

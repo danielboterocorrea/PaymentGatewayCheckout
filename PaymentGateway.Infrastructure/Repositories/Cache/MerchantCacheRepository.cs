@@ -10,6 +10,7 @@ namespace PaymentGateway.Infrastructure.Repositories.Cache
         private readonly MerchantRepository _merchantRepository;
         private readonly ILogger<CurrencyCacheRepository> _logger;
         private readonly IGatewayCache _cache;
+        private static string KeyFormat = "Merchant_{0}";
 
         public MerchantCacheRepository(MerchantRepository merchantRepository,
              ILogger<CurrencyCacheRepository> logger,
@@ -22,7 +23,7 @@ namespace PaymentGateway.Infrastructure.Repositories.Cache
 
         public async Task<Merchant> GetByAsync(string value)
         {
-            string key = "Merchant" + value;
+            string key = string.Format(KeyFormat, value);
             _logger.LogInformation($"MerchantCacheRepository - GetByAsync({value})");
 
             var currencyExisted = _cache.TryGet(key, out Merchant merchant);
