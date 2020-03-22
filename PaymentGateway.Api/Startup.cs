@@ -43,6 +43,8 @@ namespace PaymentGateway.Api
         }
 
         public IConfiguration Configuration { get; }
+        //TODO: From config
+        public virtual string DatabaseName => "PaymentGatewayInMemoryDatabase";
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public virtual void ConfigureServices(IServiceCollection services)
@@ -59,7 +61,7 @@ namespace PaymentGateway.Api
             });
 
             services.AddDbContext<PaymentGatewayContext>(optionsBuilder =>
-                   optionsBuilder.UseInMemoryDatabase(databaseName: "PaymentGatewayInMemoryDatabase"));
+                   optionsBuilder.UseInMemoryDatabase(databaseName: DatabaseName));
 
             ConfigureRepositories(services);
             ConfigureRules(services);
@@ -85,7 +87,7 @@ namespace PaymentGateway.Api
             services.AddSingleton<IMetricsTime, PrometheusMetricsTime>();
         }
 
-        private static void ConfigureAppServices(IServiceCollection services)
+        private void ConfigureAppServices(IServiceCollection services)
         {
             //Services
             services.AddSingleton<IPublisher<PaymentRequest>, InMemoryQueue<PaymentRequest>>();
@@ -106,13 +108,14 @@ namespace PaymentGateway.Api
         }
 
         private static PaymentGatewayContext PaymentGatewayContextLongRunning = null;
-        public static PaymentGatewayContext GetLongRunningContext()
+        public PaymentGatewayContext GetLongRunningContext()
         {
             if(PaymentGatewayContextLongRunning == null)
             {
                 var optionsBuilder = new DbContextOptionsBuilder<PaymentGatewayContext>();
-                optionsBuilder.UseInMemoryDatabase(databaseName: "PaymentGatewayInMemoryDatabase");
+                optionsBuilder.UseInMemoryDatabase(databaseName: DatabaseName);
                 PaymentGatewayContextLongRunning = new PaymentGatewayContext(optionsBuilder.Options);
+                PaymentGatewayContextLongRunning.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
             }
             return PaymentGatewayContextLongRunning;
         }
@@ -260,15 +263,20 @@ namespace PaymentGateway.Api
             }
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public virtual void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
+        public virtual void LaunchConsumer(IServiceProvider serviceProvider)
         {
-            //
-            Task.Run(() => {
+            Task.Run(() =>
+            {
                 var consumer = GetProducerConsumerSender<PaymentRequest, AcquiringBankPaymentResponse>(serviceProvider);
                 var task = consumer.ConsumeAsync();
                 Task.WaitAll(task);
             });
+        }
+
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public virtual void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
+        {
+            LaunchConsumer(serviceProvider);
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();

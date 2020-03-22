@@ -64,6 +64,14 @@ namespace PaymentGateway.SharedTests
             return creditCard;
         }
 
+        public static string GetValidPaymentRequestResponse(string id)
+        {
+            return "{\"result\":{\"id\":\"" + id + "\",\"merchant\":{\"name\":\"Apple\"},\"creditCard\":" +
+                "{\"number\":\"XXXX XXXX XXXX 1213\",\"expirationDate\":\"2025-01-01T00:00:00\"," +
+                "\"cvv\":0,\"holderName\":\"Daniel Botero Correa\"},\"amount\":125.0,\"currency\":\"EUR\"," +
+                "\"statusCode\":\"Pending\",\"reason\":null},\"_links\":[{\"self\":{\"href\":\"Payments/" + id + "\"}}]}";
+        }
+
         public static PaymentRequest GetValidPaymentRequest()
         {
             return new PaymentRequest

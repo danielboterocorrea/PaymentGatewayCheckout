@@ -59,11 +59,7 @@ namespace PaymentGateway.IntegrationTests.Controllers
             var responseGet = paymentGatewayApiClient.GetAsync($"/api/Payments/{id}").GetAwaiter().GetResult();
             responseGet.StatusCode.Should().Be(HttpStatusCode.OK);
             responseGet.Content.ReadAsStringAsync().GetAwaiter().GetResult().Should()
-                .Be("{\"result\":{\"id\":\"" + id + "\",\"merchant\":{\"name\":\"Apple\"}," +
-                "\"creditCard\":{\"number\":\"XXXX XXXX XXXX 1213\",\"expirationDate\":\"2025-01-01T00:00:00\",\"cvv\":0," +
-                "\"holderName\":\"Daniel Botero Correa\"}," +
-                "\"amount\":125.0,\"currency\":\"EUR\"}," +
-                "\"_links\":[{\"self\":{\"href\":\"Payments/" + id + "\"}}]}");
+                .Be(SharedTestsHelper.GetValidPaymentRequestResponse(id));
         }
     }
 }

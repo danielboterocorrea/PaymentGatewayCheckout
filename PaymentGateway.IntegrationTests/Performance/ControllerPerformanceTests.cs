@@ -107,11 +107,7 @@ namespace PaymentGateway.IntegrationTests.Performance
                 var responseGet = paymentGatewayApiClient.GetAsync($"/api/Payments/{id}").GetAwaiter().GetResult();
                 responseGet.StatusCode.Should().Be(HttpStatusCode.OK);
                 responseGet.Content.ReadAsStringAsync().GetAwaiter().GetResult().Should()
-                    .Be("{\"result\":{\"id\":\"" + id + "\",\"merchant\":{\"name\":\"Apple\"}," +
-                    "\"creditCard\":{\"number\":\"XXXX XXXX XXXX 1213\",\"expirationDate\":\"2025-01-01T00:00:00\",\"cvv\":0," +
-                    "\"holderName\":\"Daniel Botero Correa\"}," +
-                    "\"amount\":125.0,\"currency\":\"EUR\"}," +
-                    "\"_links\":[{\"self\":{\"href\":\"Payments/" + id + "\"}}]}");
+                    .Be(SharedTestsHelper.GetValidPaymentRequestResponse(id));
                 sw.Stop();
                 max = Math.Max(max, sw.Elapsed.TotalMilliseconds);
                 min = Math.Min(min, sw.Elapsed.TotalMilliseconds);
@@ -176,11 +172,7 @@ namespace PaymentGateway.IntegrationTests.Performance
             Debug.WriteLine($"[{i}:3]:{sw.ElapsedMilliseconds}");
             responseGet.StatusCode.Should().Be(HttpStatusCode.OK);
             (await responseGet.Content.ReadAsStringAsync()).Should()
-                .Be("{\"result\":{\"id\":\"" + id + "\",\"merchant\":{\"name\":\"Apple\"}," +
-                "\"creditCard\":{\"number\":\"XXXX XXXX XXXX 1213\",\"expirationDate\":\"2025-01-01T00:00:00\",\"cvv\":0," +
-                "\"holderName\":\"Daniel Botero Correa\"}," +
-                "\"amount\":125.0,\"currency\":\"EUR\"}," +
-                "\"_links\":[{\"self\":{\"href\":\"Payments/" + id + "\"}}]}");
+                .Be(SharedTestsHelper.GetValidPaymentRequestResponse(id));
             Debug.WriteLine($"[{i}:4]:{sw.ElapsedMilliseconds}");
             sw.Stop();
             lock (locker)
