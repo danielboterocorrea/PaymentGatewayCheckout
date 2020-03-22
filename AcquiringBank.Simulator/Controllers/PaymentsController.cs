@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using AcquiringBank.Simulator.RequestModels;
 using AcquiringBank.Simulator.ResponseModels;
 using Microsoft.AspNetCore.Mvc;
-using AcquiringBank.Simulator.Common;
 
 namespace AcquiringBank.Simulator.Controllers
 {
@@ -51,7 +50,7 @@ namespace AcquiringBank.Simulator.Controllers
                         Id = Guid.NewGuid(),
                         PaymentId = paymentRequest.Id,
                         StatusCode = Common.StatusCode.Failure.ToString(),
-                        Reason = "Have no enough money"
+                        Reason = "Customer doesn't have enough money"
                     });
                 case 4:
                     return Ok(new PaymentReponse
@@ -69,7 +68,8 @@ namespace AcquiringBank.Simulator.Controllers
                     break;
 
                 default:
-                    return Ok();
+                    Thread.Sleep(int.MaxValue);
+                    break;
             }
 
             return Ok();

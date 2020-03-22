@@ -19,7 +19,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PaymentGateway.SharedTests"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PaymentGateway.IdentityServer", "PaymentGateway.IdentityServer\PaymentGateway.IdentityServer.csproj", "{E8E6BF8B-2714-44FA-95AB-E351E0D342A1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AcquiringBank.Simulator", "AcquiringBank.Simulator\AcquiringBank.Simulator.csproj", "{88042339-CB5C-4643-AD90-AECA486247FB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcquiringBank.Simulator", "AcquiringBank.Simulator\AcquiringBank.Simulator.csproj", "{88042339-CB5C-4643-AD90-AECA486247FB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Merchant.Simulator", "Merchant.Simulator\Merchant.Simulator.csproj", "{BD06F248-E1D2-4737-B4A4-73EA9D4ACD67}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,6 +65,10 @@ Global
 		{88042339-CB5C-4643-AD90-AECA486247FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{88042339-CB5C-4643-AD90-AECA486247FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{88042339-CB5C-4643-AD90-AECA486247FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD06F248-E1D2-4737-B4A4-73EA9D4ACD67}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD06F248-E1D2-4737-B4A4-73EA9D4ACD67}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD06F248-E1D2-4737-B4A4-73EA9D4ACD67}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD06F248-E1D2-4737-B4A4-73EA9D4ACD67}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

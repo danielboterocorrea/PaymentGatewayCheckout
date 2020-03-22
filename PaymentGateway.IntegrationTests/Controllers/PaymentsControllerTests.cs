@@ -1,26 +1,12 @@
 ﻿using FluentAssertions;
-using Microsoft.AspNetCore.Mvc.Testing;
 using NUnit.Framework;
 using PaymentGateway.SharedTests;
 using System.Net;
-using IdentityModel.Client;
-using System;
-using Microsoft.Extensions.Hosting;
-using Serilog;
-using Microsoft.Extensions.Configuration;
-using System.IO;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.TestHost;
 using Newtonsoft.Json;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
-using PaymentGateway.Application.ResponseModels;
 using PaymentGateway.Api.Helpers;
-using System.Diagnostics;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore;
-using System.Threading.Tasks;
 using PaymentGateway.IntegrationTests.Helpers;
 
 namespace PaymentGateway.IntegrationTests.Controllers

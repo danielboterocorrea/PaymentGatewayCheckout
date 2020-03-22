@@ -25,7 +25,7 @@ namespace PaymentGateway.Domain.Model
 
         public void ChangeStatus(StatusCode statusCode, string reason)
         {
-            StatusCode = StatusCode;
+            StatusCode = statusCode;
             Reason = reason;
         }
 

@@ -50,7 +50,6 @@ namespace PaymentGateway.Infrastructure.Repositories.Cache
             //TODO: Create format, same in all cache repositories
             string key = "Payment_" + payment.Id;
             _cache.Remove(key);
-
             await _paymentRepository.UpdateAsync(payment);
         }
     }

@@ -1,9 +1,7 @@
 ﻿using IdentityModel.Client;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -11,7 +9,6 @@ using PaymentGateway.Application.Mapper;
 using PaymentGateway.Application.RequestModels;
 using PaymentGateway.Application.Services;
 using PaymentGateway.Application.Specifications;
-using PaymentGateway.Application.Toolbox.Interfaces;
 using PaymentGateway.Domain.Model;
 using PaymentGateway.Domain.Specifications;
 using PaymentGateway.Domain.Toolbox;
@@ -24,7 +21,6 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace PaymentGateway.SharedTests
@@ -213,10 +209,10 @@ namespace PaymentGateway.SharedTests
         public static PaymentService GetPaymentService()
         {
             var logger = new NullLogger<PaymentService>();
-            var producerConsumer = new Mock<IProducerConsumer<PaymentRequest>>();
+            var queryProvider = new Mock<Application.Services.Interfaces.IPublisher<PaymentRequest>>();
             var cryptor = GetCryptor();
             var paymentRepository = new PaymentRepository(cryptor, GetPaymentGatewayContext());
-            return new PaymentService(paymentRepository, GetPaymentRequestToPayment(), logger, producerConsumer.Object);
+            return new PaymentService(paymentRepository, GetPaymentRequestToPayment(), logger, queryProvider.Object);
         }
 
         public static bool PaymentExists(Guid id)
@@ -257,6 +253,21 @@ namespace PaymentGateway.SharedTests
                     webBuilder
                     .UseUrls("https://*:5002", "http://*:5003")
                     .UseStartup<IdentityServer.Startup>();
+                }).Build().Run();
+            });
+        }
+
+        public static void LaunchAcquiringSimulator()
+        {
+            Task.Factory.StartNew(() =>
+            {
+                Host.CreateDefaultBuilder()
+                .UseSerilog()
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder
+                    .UseUrls(new[] { "http://*:53677", "https://*:44398" })
+                    .UseStartup<AcquiringBank.Simulator.Startup>();
                 }).Build().Run();
             });
         }

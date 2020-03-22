@@ -10,6 +10,8 @@ namespace PaymentGateway.Application.ResponseModels
         public CreditCardInfo CreditCard { get; set; }
         public decimal Amount { get; set; }
         public string Currency { get; set; }
+        public string StatusCode { get; set; }
+        public string Reason { get; set; }
 
     }
 }

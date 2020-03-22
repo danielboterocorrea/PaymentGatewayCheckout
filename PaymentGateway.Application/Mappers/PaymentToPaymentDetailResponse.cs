@@ -24,7 +24,9 @@ namespace PaymentGateway.Application.Mappers
                 Merchant = new RequestModels.MerchantInfo
                 {
                     Name = payment.Merchant.Name
-                }
+                },
+                StatusCode = payment.StatusCode.ToString(),
+                Reason = payment.Reason
             };
         }
     }

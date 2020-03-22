@@ -9,8 +9,6 @@ using PaymentGateway.Api;
 using PaymentGateway.Application.Mapper;
 using PaymentGateway.Application.Mappers;
 using PaymentGateway.Application.Mappers.Interfaces;
-using PaymentGateway.Application.RequestModels;
-using PaymentGateway.Application.ResponseModels;
 using PaymentGateway.Application.Services;
 using PaymentGateway.Application.Services.Interfaces;
 using PaymentGateway.Application.Specifications;
@@ -32,7 +30,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
-using System.Text;
 
 namespace PaymentGateway.IntegrationTests
 {
@@ -40,10 +37,15 @@ namespace PaymentGateway.IntegrationTests
     {
         public FakePaymentGatewayApiStartup(IConfiguration configuration) : base(configuration)
         {
+            var config = new ConfigurationBuilder()
+                .SetBasePath(Path.Combine(AppContext.BaseDirectory))
+                .AddJsonFile($"appsettings.json", optional: false, reloadOnChange: true)
+                .Build();
+
             //Configuring Serilog logging
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom
-                .Configuration(configuration)
+                .Configuration(config)
                 .CreateLogger();
         }
 
@@ -101,25 +103,22 @@ namespace PaymentGateway.IntegrationTests
             services.AddTransient<ICryptor>(sp => new Cryptor("d09e0b5a-7cb0-4ae5-9598-80ce6a8f0f4b"));
             services.AddSingleton<IGatewayCache, InMemoryGatewayCache>();
             services.AddTransient<IDateTimeProvider, DateTimeProvider>();
-            services.AddSingleton<IProducerConsumer<PaymentRequest>>(ps =>
-            {
-                return GetProducerConsumerSender<PaymentRequest, AcquiringBankPaymentResponse>(ps);
-            });
         }
 
-        private static ProducerConsumerSender<T, R> GetProducerConsumerSender<T, R>(IServiceProvider sp) where T : IGetId
+        private static ConsumerSender<T, R> GetProducerConsumerSender<T, R>(IServiceProvider sp) where T : IGetId
         {
             var loggerFactory = (ILoggerFactory)sp.GetService(typeof(ILoggerFactory));
             var httpClientFactory = (IHttpClientFactory)sp.GetService(typeof(IHttpClientFactory));
             var httpClient = httpClientFactory.CreateClient();
+            var paymentRepository = (IPaymentRepository)sp.GetService(typeof(IPaymentRepository));
             var acquiringBankPaymentService = new AcquiringBankPaymentService(loggerFactory
-                .CreateLogger<AcquiringBankPaymentService>(), httpClient);
+                .CreateLogger<AcquiringBankPaymentService>(), httpClient, paymentRepository);
             var timeOutHttpRequest = new TimeoutRequest<T, R>((ISendItem<T, R>)acquiringBankPaymentService,
                 loggerFactory.CreateLogger<TimeoutRequest<T, R>>(), TimeSpan.FromSeconds(5));
             var retries = new RetryRequest<T, R>(timeOutHttpRequest,
                 loggerFactory.CreateLogger<RetryRequest<T, R>>(), 3);
-            return new ProducerConsumerSender<T, R>(loggerFactory.CreateLogger<ProducerConsumerSender<T, R>>(), 3,
-                retries);
+            return new ConsumerSender<T, R>(loggerFactory.CreateLogger<ConsumerSender<T, R>>(), 3,
+                retries,null);
         }
 
         private static void ConfigureRules(IServiceCollection services)
@@ -181,7 +180,7 @@ namespace PaymentGateway.IntegrationTests
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public override void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public override void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
         {
             if (env.IsDevelopment())
             {

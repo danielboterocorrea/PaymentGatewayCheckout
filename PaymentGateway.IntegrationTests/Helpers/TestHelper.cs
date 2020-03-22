@@ -3,9 +3,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using PaymentGateway.SharedTests;
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
-using System.Text;
 
 namespace PaymentGateway.IntegrationTests.Helpers
 {

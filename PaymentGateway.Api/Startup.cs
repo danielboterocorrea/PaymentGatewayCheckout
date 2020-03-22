@@ -31,6 +31,7 @@ using PaymentGateway.Application.Toolbox.Interfaces;
 using System.Net.Http;
 using PaymentGateway.Application.RequestModels;
 using PaymentGateway.Application.ResponseModels;
+using System.Threading.Tasks;
 
 namespace PaymentGateway.Api
 {
@@ -87,36 +88,68 @@ namespace PaymentGateway.Api
         private static void ConfigureAppServices(IServiceCollection services)
         {
             //Services
+            services.AddSingleton<IPublisher<PaymentRequest>, InMemoryQueue<PaymentRequest>>();
             services.AddTransient<IPaymentService, PaymentService>();
+            services.AddTransient(sp =>
+            {
+                var loggerFactory = (ILoggerFactory)sp.GetService(typeof(ILoggerFactory));
+                var cryptor = (ICryptor)sp.GetService(typeof(ICryptor));
+                var httpClientFactory = (IHttpClientFactory)sp.GetService(typeof(IHttpClientFactory));
+                var gatewayCache = (IGatewayCache)sp.GetService(typeof(IGatewayCache));
+                //var paymentRepository = (IPaymentRepository)sp.GetService(typeof(IPaymentRepository));
+                var paymentRepository = new PaymentCacheRepository(new PaymentRepository(cryptor, GetLongRunningContext()),
+                    loggerFactory.CreateLogger<PaymentCacheRepository>(), gatewayCache);
+                var httpClient = httpClientFactory.CreateClient();
+                return new AcquiringBankPaymentService(loggerFactory.CreateLogger<AcquiringBankPaymentService>(),
+                    httpClient, paymentRepository);
+            });
+        }
+
+        private static PaymentGatewayContext PaymentGatewayContextLongRunning = null;
+        public static PaymentGatewayContext GetLongRunningContext()
+        {
+            if(PaymentGatewayContextLongRunning == null)
+            {
+                var optionsBuilder = new DbContextOptionsBuilder<PaymentGatewayContext>();
+                optionsBuilder.UseInMemoryDatabase(databaseName: "PaymentGatewayInMemoryDatabase");
+                PaymentGatewayContextLongRunning = new PaymentGatewayContext(optionsBuilder.Options);
+            }
+            return PaymentGatewayContextLongRunning;
         }
 
         private static void ConfigureToolbox(IServiceCollection services)
         {
-
             //Toolbox
             //TODO: Get this from the configuration
             services.AddTransient<ICryptor>(sp => new Cryptor("d09e0b5a-7cb0-4ae5-9598-80ce6a8f0f4b"));
             services.AddSingleton<IGatewayCache, InMemoryGatewayCache>();
             services.AddTransient<IDateTimeProvider, DateTimeProvider>();
-            services.AddSingleton<IProducerConsumer<PaymentRequest>>(ps =>
-            {
-                return GetProducerConsumerSender<PaymentRequest, AcquiringBankPaymentResponse>(ps);
-            });
+            //services.AddScoped(sp =>
+            //{
+            //    return GetProducerConsumerSender<PaymentRequest, AcquiringBankPaymentResponse>(sp);
+            //});
+
         }
 
-        private static ProducerConsumerSender<T,R> GetProducerConsumerSender<T, R>(IServiceProvider sp) where T : IGetId
+        private static ISendItem<T, R> GetSendPayment<T, R>(IServiceProvider sp) where T : IGetId
         {
             var loggerFactory = (ILoggerFactory)sp.GetService(typeof(ILoggerFactory));
-            var httpClientFactory = (IHttpClientFactory)sp.GetService(typeof(IHttpClientFactory));
-            var httpClient = httpClientFactory.CreateClient();
-            var acquiringBankPaymentService = new AcquiringBankPaymentService(loggerFactory
-                .CreateLogger<AcquiringBankPaymentService>(), httpClient);
-            var timeOutHttpRequest = new TimeoutRequest<T, R>((ISendItem<T,R>)acquiringBankPaymentService,
+            var acquiringBankPaymentService = (AcquiringBankPaymentService)sp.GetService(typeof(AcquiringBankPaymentService));
+            var timeOutHttpRequest = new TimeoutRequest<T, R>((ISendItem<T, R>)acquiringBankPaymentService,
                 loggerFactory.CreateLogger<TimeoutRequest<T, R>>(), TimeSpan.FromSeconds(5));
             var retries = new RetryRequest<T, R>(timeOutHttpRequest,
                 loggerFactory.CreateLogger<RetryRequest<T, R>>(), 3);
-            return new ProducerConsumerSender<T, R>(loggerFactory.CreateLogger<ProducerConsumerSender<T, R>>(), 3,
-                retries);
+
+            return retries;
+        }
+
+        private static ConsumerSender<T,R> GetProducerConsumerSender<T, R>(IServiceProvider sp) where T : IGetId
+        {
+            var loggerFactory = (ILoggerFactory)sp.GetService(typeof(ILoggerFactory));
+            var retries = GetSendPayment<T, R>(sp);
+            var inMemoryQueue = (IQueueProvider<T>)sp.GetService(typeof(IPublisher<T>));
+            return new ConsumerSender<T, R>(loggerFactory.CreateLogger<ConsumerSender<T, R>>(), 3,
+                retries, inMemoryQueue);
         }
 
         private static void ConfigureRules(IServiceCollection services)
@@ -228,8 +261,15 @@ namespace PaymentGateway.Api
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public virtual void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public virtual void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
         {
+            //
+            Task.Run(() => {
+                var consumer = GetProducerConsumerSender<PaymentRequest, AcquiringBankPaymentResponse>(serviceProvider);
+                var task = consumer.ConsumeAsync();
+                Task.WaitAll(task);
+            });
+
             // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();
 
