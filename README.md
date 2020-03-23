@@ -6,11 +6,11 @@ Challenge accepted! E-Commerce needs to sell goods and services online, I had to
 
 I designed the application using a onion architecture style
 
-![](https://pandao.github.io/editor.md/examples/images/4.jpg)
+![](https://github.com/danielboterocorrea/PaymentGatewayCheckout/blob/master/Images/Onion%20architecture.png)
 
 ### High level design of the system
 
-![](https://pandao.github.io/editor.md/examples/images/4.jpg)
+![](https://github.com/danielboterocorrea/PaymentGatewayCheckout/blob/master/Images/High%20level%20system%20design.png)
 
 This solution leverage the power of interfaces to decoupled the application from concrete implementations, it is loosely coupled to aspects such as:
 
@@ -283,4 +283,13 @@ A consumer picks up the payment request and send it to the acquiring bank. The f
  + Everything goes ok
  + Consumer sends the request to the acquiring bank, the Acquiring service receives the response and update the payment using the information returned by the acquiring service.
 
+## Business Metrics
 
+The business metrics I found nice to have were:
++ Time Payments Retrieved: Average time per request when payment is retrieved
++ Time Payments Received: Average time per request when payment is received
++ Payments Received: Number of payments received
++ Payments Retrieved: Number of payments retrieved
++ Payments Received Errors: Number of errors when payment request received
+
+![](https://github.com/danielboterocorrea/PaymentGatewayCheckout/blob/master/Images/Metrics3.PNG)
