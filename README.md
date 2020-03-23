@@ -16,11 +16,11 @@ This solution leverage the power of interfaces to decoupled the application from
 
 ##### Authentication/Authorization Mechanism:
 
-This is dealt within the PaymentGateway.Api, I use IdentityServer4 to enable merchant to Authenticate with and be Authorized by when calling api/Payments endpoints. IdentityServer4 can be configured to use any kind of Oauth2-based authentication.
+I use IdentityServer4 to enable merchant to Authenticate with and be Authorized by when calling api/Payments endpoints. IdentityServer4 can be configured to use any kind of Oauth2-based authentication.
 
 ##### Logging
 
-I used .Net Core abstractions for logging from the ground up. It enables me to switch my logging provider from one to another without affecting my Business Logic and write to different  logging services only by changing the PaymentGateway.Api ‘s configuration file. I used Serilog as Logging library.
+I used .Net Core abstractions for logging from the ground up. It enables me to switch my logging provider from one to another without affecting my Business Logic and write to different  logging services only by changing the PaymentGateway.Api's configuration file.
 
 ##### Persistence
 
@@ -53,11 +53,11 @@ Swagger: Open-source software framework backed by a large ecosystem of tools tha
 
 #### Resilient
 
-I have implemented the Timeout and Retry pattern so the system is able to process all the payment requests even if the Acquiring bank Api is down.
+I have implemented the Timeout and Retry pattern so the system is able to process all the payment requests after the Acquiring bank Api went down and back up.
 
 #### Fast
 
-Payment requests are validated and then queued in an InMemoryQueue (which can be replaced by a real queue). This allows me to receive thousands of requests in parallel as I give a fast feedback to the user. Then a consumer treats the requests making my system eventual consistent.
+Payment requests are validated and queued in an InMemoryQueue (which can be replaced by a real queue). This allows me to receive thousands of requests in parallel as I give a fast feedback to the user. Then a consumer treats the requests making my system eventual consistent.
 
 Any retrieve payment request is cached so the next time we want to access it, the system doesn’t have to query the database but the caching system. If a payment request is updated after Acquiring bank feedback, the payment request is removed from the cache.
 
@@ -265,3 +265,43 @@ The business metrics I found nice to have were:
 + Payments Received Errors: Number of errors when payment request received
 
 ![](https://github.com/danielboterocorrea/PaymentGatewayCheckout/blob/master/Images/Metrics3.PNG)
+
+
+## Launch Application
+
+### Prometheus
+
+```cmd
+docker run -d --name prometheus -p 9090:9090 -v "{path}/prometheus.yml":"/etc/prometheus/prometheus.yml" prom/prometheus --config.file="/etc/prometheus/prometheus.yml"
+```
+Url: http://localhost:9090/
+
+### Grafana
+
+```cmd
+docker run -d -p 3000:3000 --name grafana grafana/grafana:6.5.0
+docker exec -ti {CONTAINERID} grafana-cli admin reset-admin-password admin
+```
+
+Url: http://localhost:3000/
+User: admin
+Password admin
+
++ Configuration
+ + Data Sources
+  + Add Data Source
+   + Prometheus
+    + HTTP
+     + Url: http://{NO-LOCALHOST-IP}:9090
+
+### Graylog
+
+```cmd
+docker run --name mongo -d mongo:3
+docker run --name elasticsearch -e "http.host=0.0.0.0" -e "ES_JAVA_OPTS=-Xms512m -Xmx512m" -d docker.elastic.co/elasticsearch/elasticsearch-oss:6.8.5
+docker run --name graylog --link mongo --link elasticsearch -p 9000:9000 -p 12201:12201 -p 1514:1514 -e GRAYLOG_HTTP_EXTERNAL_URI="http://127.0.0.1:9000/" -d graylog/graylog:3.2
+```
+
+User: admin
+Password: admin
+
