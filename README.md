@@ -250,9 +250,9 @@ A consumer picks up the payment request and send it to the acquiring bank. The f
   + Consumer sends the request to the acquiring bank
   + Request timed out: I create a timeout policy. If a request is timed out, I cancel the request.
   + If the request fail for some reason (e.g. Timeout, service unavailable), a retry strategy has been set up, after X number of fails the request is send back to the consumer as “faulted”.
-
-+ Consumer queue up again the request for later treatment.
-  + Everything goes ok
+  + Consumer queue up again the request for later treatment.
+  
++ Everything goes ok
   + Consumer sends the request to the acquiring bank, the Acquiring service receives the response and update the payment using the information returned by the acquiring service.
 
 ## Business Metrics
