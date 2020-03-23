@@ -4,7 +4,7 @@ Challenge accepted! E-Commerce needs to sell goods and services online, I had to
 
 ## Application Architecture
 
-I designed the application using a onion architecture style
+I designed an onion architecture style application
 
 ![](https://github.com/danielboterocorrea/PaymentGatewayCheckout/blob/master/Images/Onion%20architecture.png)
 
@@ -40,21 +40,13 @@ I used a really basic algorithm to encrypt/decrypt CreditCard details but it can
 
 ### Applications and Tools
 
-##### IdentityServer4
+IdentityServer4: Authentication/Authorization server.
 
-Authentication/Authorization server.
+Prometheus: Software application used for event monitoring and alerting
 
-##### Prometheus
+Grafana: Analytics and interactive visualization software, Prometheous is the data source for this application.
 
-Software application used for event monitoring and alerting
-
-##### Grafana
-
-Analytics and interactive visualization software, Prometheous is the data source for this application.
-
-##### Swagger
-
-Open-source software framework backed by a large ecosystem of tools that helps developers design, build, document, and consume RESTful web services.
+Swagger: Open-source software framework backed by a large ecosystem of tools that helps developers design, build, document, and consume RESTful web services.
 
 
 ### Payment Gateway Application Characteristics
@@ -100,33 +92,13 @@ Most of the above make the application maintainable
 
 The application has been developed using .Net Core Framework and C#. In more detail:
 
-#### Logging
-
-Logging purposes I used Serilog (File, Console, Graylog)
-
-#### Metrics
-
-Prometheous and Grafana
-
-#### Queue
-
-InMemory BlockingCollection
-
-#### Cache
-
-MemoryCache
-
-#### Authorization/Authentication Server
-
-IdentityServer4
-
-#### Api interface
-
-Swagger
-
-#### Testing
-
-NUnit, Moq
++ Logging: Logging purposes I used Serilog (File, Console, Graylog)
++ Metrics: Prometheous and Grafana
++ Queue: InMemory BlockingCollection
++ Cache: MemoryCache
++ Authorization/Authentication Server: IdentityServer4
++ Api interface: Swagger
++ Testing: NUnit, Moq
 
 ## Workflows
 
@@ -134,7 +106,7 @@ NUnit, Moq
 
 A merchant has to authenticate with our authorization server, get an access token and send it as Bearer token within the payment request. A payment request looks like:
 
-```bash
+```http
 POST /api/Payments HTTP/1.1
 Host: localhost:53746
 Content-Type: application/json
@@ -203,7 +175,7 @@ I have structured my api based on checkout bancontact doc: [Bancontact|Checkout]
 A merchant, after authentication and using the link provided in the Payments Received use case ([Link](https://localhost:44346/api/Payments/a6956972-8314-4cb0-b03e-84bf21ff915a)) can request the payment to check out the state of the payment request. The request looks like:
 
 
-```bash
+```http
 GET /api/Payments/1ad61861-568e-493f-880d-cec18f324a05 HTTP/1.1
 Host: localhost:44346
 Content-Type: application/json
