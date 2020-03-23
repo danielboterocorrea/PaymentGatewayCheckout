@@ -102,7 +102,7 @@ The application has been developed using .Net Core Framework and C#. In more det
 
 ## Performance Tests
 
-### Parallel requests
+### Parallel requests (With logging on which makes slower the tests)
 
 | Number  | Time Min (ms) | Time Avg (ms)   |Time Max (ms) | Test Exec Time |
 | --------| --------------|-----------------|--------------|----------------|
@@ -111,7 +111,7 @@ The application has been developed using .Net Core Framework and C#. In more det
 | 1000    | 2.7073 		  | 3.255015        | 11.5572      | 1 sec          |
 | 10000   | 2.6321 		  | 3.714012        | 14.5702      | 17 sec         |
 
-### Requests in sequence
+### Requests in sequence (With logging on which makes slower the tests)
 
 | Number  | Time Min (ms) | Time Avg (ms)   |Time Max (ms) | Test Exec Time |
 | --------| --------------|-----------------|--------------|----------------|

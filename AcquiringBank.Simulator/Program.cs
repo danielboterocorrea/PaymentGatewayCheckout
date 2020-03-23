@@ -18,7 +18,7 @@ namespace AcquiringBank.Simulator
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder
-                    .UseUrls(new[] { "http://*:53677", "https://*:44398" })
+                    .UseUrls(new[] { "http://192.168.1.76:53677", "https://192.168.1.76:44398" })
                     .UseStartup<Startup>();
                 });
     }
