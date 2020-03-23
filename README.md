@@ -100,6 +100,27 @@ The application has been developed using .Net Core Framework and C#. In more det
 + Api interface: Swagger
 + Testing: NUnit, Moq
 
+## Performance Tests
+
+### Parallel requests
+
+| Number  | Time Min (ms) | Time Avg (ms)   |Time Max (ms) | Test Exec Time |
+| --------| --------------|-----------------|--------------|----------------|
+| 10      | 2.8592        | 3.54564        	| 12.4784      | 450 ms         |
+| 100     | 2.7867 		  |	3.327859        | 12.1787      | 548 ms         |
+| 1000    | 2.7073 		  | 3.255015        | 11.5572      | 1 sec          |
+| 10000   | 2.6321 		  | 3.714012        | 14.5702      | 17 sec         |
+
+### Requests in sequence
+
+| Number  | Time Min (ms) | Time Avg (ms)   |Time Max (ms) | Test Exec Time |
+| --------| --------------|-----------------|--------------|----------------|
+| 10      | 2.772         | 3.663050        | 9.4165       | 177 ms         |
+| 100     | 2.5517 		  |	3.437177        | 9.9817       | 383 ms         |
+| 1000    | 2.4543 		  | 2.900395        | 9.2333       | 2 sec          |
+| 10000   | 2.2343 		  | 3.423295        | 16.213       | 34 sec         |
+
+
 ## Workflows
 
 ### Receive payment request

@@ -50,7 +50,7 @@ namespace PaymentGateway.IntegrationTests.Performance
         [TestCase(100)]
         [TestCase(1000)]
         [TestCase(10000)]
-        public void PaymentPostPerformanceTest(int loops)
+        public void PaymentPostPerformanceTest(int requests)
         {
             double min = double.MaxValue;
             double max = double.MinValue;
@@ -60,7 +60,7 @@ namespace PaymentGateway.IntegrationTests.Performance
             //Warming up
             paymentGatewayApiClient.GetAsync($"/api/Payments/f7507410-6fe2-45c2-8f94-5a8ef8a66daa").GetAwaiter().GetResult();
 
-            for (int i = 0; i < loops; i++)
+            for (int i = 0; i < requests; i++)
             {
                 var sw = new Stopwatch();
 
@@ -91,35 +91,36 @@ namespace PaymentGateway.IntegrationTests.Performance
                 sum += sw.Elapsed.TotalMilliseconds;
             }
 
-            double avg = sum / loops;
+            double avg = sum / requests;
 
             max.Should().BeLessThan(1000);
             min.Should().BeLessThan(80);
             avg.Should().BeLessThan(300);
             
-            _logger.LogInformation($"Max: {max} - Avg: {avg} - Min: {min}");
+            _logger.LogInformation($"Number of requests: {requests} - Time Max: {max} - Time Avg: {avg} - Time Min: {min}");
         }
 
         [TestCase(10)]
         [TestCase(100)]
         [TestCase(1000)]
-        public void PaymentPostMultithreadingPerformanceTest(int loops)
+        [TestCase(10000)]
+        public void PaymentPostMultithreadingPerformanceTest(int parallelRequests)
         {
             List<Task> tasks = new List<Task>();
             var paymentGatewayApiClient = TestHelper.CreatePaymentGatewayHttpClient();
             //Warming up
             paymentGatewayApiClient.GetAsync($"/api/Payments/f7507410-6fe2-45c2-8f94-5a8ef8a66daa").GetAwaiter().GetResult();
 
-            for (int i = 0; i < loops; i++)
+            for (int i = 0; i < parallelRequests; i++)
             {
                 tasks.Add(RequestsAsync(paymentGatewayApiClient, i));
             }
 
             Task.WaitAll(tasks.ToArray());
 
-            double avg = sum / loops;
+            double avg = sum / parallelRequests;
 
-            _logger.LogInformation($"#Tasks: {numberOfTasks} - Max: {max} - Avg: {avg} - Min: {min}");
+            _logger.LogInformation($"Parallel Requests: {parallelRequests} - Time Max: {max} - Time Avg: {avg} - Time Min: {min}");
         }
 
         private async Task RequestsAsync(HttpClient paymentGatewayApiClient, int i)
