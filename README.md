@@ -267,6 +267,24 @@ The business metrics I found nice to have were:
 ![](https://github.com/danielboterocorrea/PaymentGatewayCheckout/blob/master/Images/Metrics3.PNG)
 
 
+## Identity Server Configuration
+
+| Merchant     | Secret                               | AllowedScopes   |Flow                 | User  | Password |
+| -------------| -------------------------------------|-----------------|---------------------|-------|----------|
+| Apple        | 678ebc03-8fb1-407f-ac5e-ff97e8b810f5 |PaymentGatewayApi|ClientCredentials    |       |          |
+| Google       | 3caa7ca7-7f47-4aaa-8dec-141cc0bf7bc5 |PaymentGatewayApi|ClientCredentials    |       |          |
+| SwaggerApi   | 7da3e461-a80e-4e02-a968-e21e255c4ec6 |PaymentGatewayApi|ResourceOwnerPassword| admin | admin    |
+
+
+## Swagger Instructions
+
++ Click on Authorize on the right upper corner
++ User: admin, Password: admin, Client Credentials Location: Body, Client Id: SwaggerApi, Client secret: 7da3e461-a80e-4e02-a968-e21e255c4ec6, Scopes: Check PaymentGatewayApi
++ Choose an action and click on Try out
+
+![](https://github.com/danielboterocorrea/PaymentGatewayCheckout/blob/master/Images/Swagger.PNG)
+
+
 ## Launch Application
 
 ### Prometheus
