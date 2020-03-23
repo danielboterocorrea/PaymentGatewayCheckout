@@ -39,6 +39,7 @@ namespace PaymentGateway.Application.Services
         public void OnProcessSuccessAsync(PaymentRequest paymentRequest)
         {
             _queueProvider.Publish(paymentRequest);
+            _logger.LogInformation($"OnProcessSuccessAsync queued: {paymentRequest.Id}");
         }
 
         public async Task<Payment> RetrieveAsync(Guid id)

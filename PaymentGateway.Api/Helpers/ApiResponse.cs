@@ -30,7 +30,7 @@ namespace PaymentGateway.Api.Helpers
 
     public static class ApiReponseActionResult
     {
-        public static ApiResponse CreateResponse(Guid id, string controller)
+        public static ApiResponse CreateResponse(Guid id, string controller, string pathToController)
         {
             return new ApiResponse
             {
@@ -40,7 +40,7 @@ namespace PaymentGateway.Api.Helpers
                     new Links
                     {
                         Self = new Self{
-                            Href = $"{controller}/{id}"
+                            Href = $"{pathToController}/{controller}/{id}"
                         }
                     }
                 }
@@ -59,7 +59,7 @@ namespace PaymentGateway.Api.Helpers
             };
         }
 
-        public static ApiResponse CreateResponse(PaymentDetailResponse payment, string controller)
+        public static ApiResponse CreateResponse(PaymentDetailResponse payment, string controller, string pathToController)
         {
             return new ApiResponse
             {
@@ -69,14 +69,14 @@ namespace PaymentGateway.Api.Helpers
                     new Links
                     {
                         Self = new Self{
-                            Href = $"{controller}/{payment.Id}"
+                            Href = $"{pathToController}/{controller}/{payment.Id}"
                         }
                     }
                 }
             };
         }
 
-        public static ApiResponse CreateInvalid(string[] errors, string controller)
+        public static ApiResponse CreateInvalid(string[] errors)
         {
             return new ApiResponse
             {

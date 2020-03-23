@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Transactions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using PaymentGateway.Api.Helpers;
 using PaymentGateway.Application.Mappers.Interfaces;
@@ -25,20 +26,25 @@ namespace PaymentGateway.Api.Controllers
         private readonly ILogger<PaymentsController> _logger;
         private readonly IMetricsTime _metricsTime;
         private readonly IMetricsCounter _metricsCounter;
-        private static string ControllerName = $"{nameof(PaymentsController)}".Replace("Controller", string.Empty);
+        private readonly IConfiguration _configuration;
+        private static string ControllerName = $"api/{nameof(PaymentsController)}".Replace("Controller", string.Empty);
+        private string Host => _configuration["PaymentGateway:Host"];
 
         public PaymentsController(IPaymentService paymentService,
             IPaymentToPaymentDetailResponse paymentToPaymentDetailResponse, 
             ILogger<PaymentsController> logger,
             IMetricsTime metricsTime,
-            IMetricsCounter metricsCounter)
+            IMetricsCounter metricsCounter, IConfiguration configuration)
         {
             _paymentService = paymentService;
             _paymentToPaymentDetailResponse = paymentToPaymentDetailResponse;
             _logger = logger;
             _metricsTime = metricsTime;
             _metricsCounter = metricsCounter;
+            _configuration = configuration;
         }
+
+        
 
         // GET: api/Payments
         [HttpGet]
@@ -47,7 +53,7 @@ namespace PaymentGateway.Api.Controllers
             var payments = await _paymentService.RetrieveAllAsync();
             return Ok(payments
                 .Select(p =>  
-                ApiReponseActionResult.CreateResponse(_paymentToPaymentDetailResponse.Map(p), ControllerName)));
+                ApiReponseActionResult.CreateResponse(_paymentToPaymentDetailResponse.Map(p), ControllerName, Host)));
         }
 
         // GET: api/Payments/5
@@ -68,7 +74,7 @@ namespace PaymentGateway.Api.Controllers
 
             return Ok(ApiReponseActionResult.CreateResponse(
                     _paymentToPaymentDetailResponse.Map(payment),
-                    ControllerName));
+                    ControllerName, Host));
         }
 
         // POST: api/Payments
@@ -85,18 +91,17 @@ namespace PaymentGateway.Api.Controllers
                 {
                     var paymentId = await _paymentService.ProcessAsync(paymentRequest);
                     transaction.Complete();
-                    _logger.LogInformation($"Payment passed validations [Id: {paymentRequest}]");
+                    _logger.LogDebug($"Payment passed validations [Id: {paymentRequest}]");
                 }
-                _logger.LogInformation($"Start executing on process success");
+                _logger.LogDebug($"Start executing on process success");
                 _paymentService.OnProcessSuccessAsync(paymentRequest);
-                _logger.LogInformation($"Stop executing on process success");
+                _logger.LogDebug($"Stop executing on process success");
             }
             catch(InvalidPaymentRequestException invalidPaymentRequestException)
             {
                 _metricsCounter.IncrementCounter(MetricsCountsData.PaymentsReceivedErrors);
                 _logger.LogError(invalidPaymentRequestException, $"Post - PaymentRequest id {paymentRequest.ToString()}");
-                return BadRequest(ApiReponseActionResult.CreateInvalid(invalidPaymentRequestException.Message.Split(","), 
-                    ControllerName));
+                return BadRequest(ApiReponseActionResult.CreateInvalid(invalidPaymentRequestException.Message.Split(",")));
             }
             finally
             {
@@ -104,7 +109,7 @@ namespace PaymentGateway.Api.Controllers
                 _metricsTime.RecordTime(MetricsTimeData.TimePaymentsReceived, sw.Elapsed);
             }
 
-            return Ok(ApiReponseActionResult.CreateResponse(paymentRequest.Id, ControllerName));
+            return Ok(ApiReponseActionResult.CreateResponse(paymentRequest.Id, ControllerName, Host));
         }
     }
 }
