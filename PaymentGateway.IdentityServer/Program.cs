@@ -12,10 +12,18 @@ namespace PaymentGateway.IdentityServer
     public class Program
     {
         private static IConfiguration configuration;
+        private static string environmentName;
 
         public static void Main(string[] args)
         {
             Console.Title = "PaymentGateway.IdentityServer";
+
+            environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+
+            if (string.IsNullOrEmpty(environmentName))
+            {
+                throw new ArgumentNullException("Environment ASPNETCORE_ENVIRONMENT variable is missing");
+            }
 
             //Getting configuration from appsettings
             configuration = new ConfigurationBuilder()
@@ -59,9 +67,10 @@ namespace PaymentGateway.IdentityServer
                 //.UseSerilog()
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder
-                    .UseUrls("https://*:5002", "http://*:5003")
-                    .UseStartup<Startup>();
+                    if (environmentName == "Development")
+                        webBuilder.UseUrls("https://*:5002", "http://*:5003");
+
+                    webBuilder.UseStartup<Startup>();
                 });
     }
 }

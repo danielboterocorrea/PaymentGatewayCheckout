@@ -31,6 +31,7 @@ using System.Net.Http;
 using PaymentGateway.Application.RequestModels;
 using PaymentGateway.Application.ResponseModels;
 using System.Threading.Tasks;
+using Microsoft.IdentityModel.Logging;
 
 namespace PaymentGateway.Api
 {
@@ -196,14 +197,15 @@ namespace PaymentGateway.Api
 
         private static void ConfigureIdentityServer(IServiceCollection services, string authority)
         {
-            
+            IdentityModelEventSource.ShowPII = true;
             //IdentityServer4
             services.AddAuthentication("Bearer")
                 .AddJwtBearer("Bearer", options =>
                 {
                     options.Authority = authority;
                     options.RequireHttpsMetadata = true;
-
+                    options.MetadataAddress = $"http://localhost:5003/.well-known/openid-configuration";
+                    options.RequireHttpsMetadata = false;
                     options.Audience = "PaymentGatewayApi";
                 });
         }

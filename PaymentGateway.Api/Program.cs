@@ -11,11 +11,13 @@ namespace PaymentGateway.Api
     {
         private static IConfiguration configuration;
 
+        private static string environmentName;
+
         public static void Main(string[] args)
         {
             Console.Title = "PaymentGateway.Api";
 
-            var environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
             if (string.IsNullOrEmpty(environmentName))
             {
@@ -55,9 +57,10 @@ namespace PaymentGateway.Api
                 .UseSerilog()
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder
-                    .UseUrls(new[] { $"http://*:{httpPort}", $"https://*:{httpsPort}" })
-                    .UseStartup<Startup>();
+                    if (environmentName == "Development")
+                        webBuilder.UseUrls(new[] { $"http://*:{httpPort}", $"https://*:{httpsPort}" });
+
+                    webBuilder.UseStartup<Startup>();
                 });
     }
 }

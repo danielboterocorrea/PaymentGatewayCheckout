@@ -6,9 +6,17 @@ namespace AcquiringBank.Simulator
 {
     public class Program
     {
+        private static string environmentName;
         public static void Main(string[] args)
         {
             Console.Title = "AcquiringBank.Simulator";
+
+            environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+
+            if (string.IsNullOrEmpty(environmentName))
+            {
+                throw new ArgumentNullException("Environment ASPNETCORE_ENVIRONMENT variable is missing");
+            }
 
             CreateHostBuilder(args).Build().Run();
         }
@@ -17,9 +25,10 @@ namespace AcquiringBank.Simulator
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder
-                    .UseUrls(new[] { "http://192.168.1.76:53677", "https://192.168.1.76:44398" })
-                    .UseStartup<Startup>();
+                    if(environmentName == "Development")
+                        webBuilder.UseUrls(new[] { "http://*:53677", "https://*:44398" });
+
+                    webBuilder.UseStartup<Startup>();
                 });
     }
 }
