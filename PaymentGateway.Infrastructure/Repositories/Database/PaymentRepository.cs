@@ -65,7 +65,7 @@ namespace PaymentGateway.Infrastructure.Repositories
             return new Payment(tpayment.Id, MerchantMapper.From(tpayment.Merchant),
                 CreditCardMapper.From(_cryptor, tpayment.CreditCard),
                 tpayment.Amount, CurrencyMapper.From(tpayment.Currency),
-                (StatusCode)Enum.Parse(typeof(StatusCode), tpayment.StatusCode));
+                (StatusCode)Enum.Parse(typeof(StatusCode), tpayment.StatusCode), tpayment.Reason);
         }
 
         public async Task UpdateAsync(Payment payment)

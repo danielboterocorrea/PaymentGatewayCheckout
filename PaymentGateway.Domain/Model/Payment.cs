@@ -23,6 +23,12 @@ namespace PaymentGateway.Domain.Model
             StatusCode = statusCode;
         }
 
+        public Payment(Guid id, Merchant merchant, CreditCard creditCard, decimal amount, Currency currency, StatusCode statusCode, string reason)
+            : this(id,merchant,creditCard,amount,currency,statusCode)
+        {
+            Reason = reason;
+        }
+
         public void ChangeStatus(StatusCode statusCode, string reason)
         {
             StatusCode = statusCode;
