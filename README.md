@@ -275,6 +275,7 @@ The business metrics I found nice to have were:
 docker run -d --name prometheus -p 9090:9090 -v "{path}/prometheus.yml":"/etc/prometheus/prometheus.yml" prom/prometheus --config.file="/etc/prometheus/prometheus.yml"
 ```
 Url: http://localhost:9090/
+prometheus.yml: Located under PaymentGatewayCheckout/Configuration
 
 ### Grafana
 
