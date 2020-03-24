@@ -364,6 +364,8 @@ In the graphic interface look for the + on the left hand side
  + Upload .json file
   + Withing the solution look for /Configuration/Payment Dashboard-Grafana.json
    + Import
+   
+Pd: If you don't see any data in Grafana, please change the filter to "Last 3, 6 or 12 hours", you might have timezone date time problems.
 
 ### Graylog
 
