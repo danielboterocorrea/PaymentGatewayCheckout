@@ -355,7 +355,15 @@ Password admin
   + Add Data Source
    + Prometheus
     + HTTP
-     + Url: http://{NO-LOCALHOST-IP}:9090
+      + Url: http://localhost:9090
+      + if for some reason it doesn't work, use http://{IPv4 Address}:9090 to find your IPv4 Address, open up a cmd prompt and type ipcfonfig
+	 
+In the graphic interface look for the + in the left hand side
+
++ import
+ + Upload .json file
+  + Withing the solution look for /Configuration/Payment Dashboard-Grafana.json
+   + Import
 
 ### Graylog
 
