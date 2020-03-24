@@ -352,6 +352,8 @@ Password admin
 launchgraylog.cmd
 ```
 
+Url: http://localhost:9000/
+
 User: admin
 
 Password: admin
@@ -378,3 +380,4 @@ launchacquiringbanksimulator.cmd
 launchpaymentgateway.cmd
 ```
 
+PaymentGatewayApi Url: https://localhost:44346/index.html
