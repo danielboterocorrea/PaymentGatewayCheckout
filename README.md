@@ -308,10 +308,19 @@ The business metrics I found nice to have were:
 
 ## Launch Application
 
+### Pre-installation
+
+```cmd
+#Build solution
+build.cmd
+#Install network
+createnetwork.cmd
+```
+
 ### Prometheus
 
 ```cmd
-docker run -d --name prometheus -p 9090:9090 -v "{path}/prometheus.yml":"/etc/prometheus/prometheus.yml" prom/prometheus --config.file="/etc/prometheus/prometheus.yml"
+launchprometheus.cmd
 ```
 Url: http://localhost:9090/
 prometheus.yml: Located under PaymentGatewayCheckout/Configuration
@@ -319,8 +328,7 @@ prometheus.yml: Located under PaymentGatewayCheckout/Configuration
 ### Grafana
 
 ```cmd
-docker run -d -p 3000:3000 --name grafana grafana/grafana:6.5.0
-docker exec -ti {CONTAINERID} grafana-cli admin reset-admin-password admin
+launchgrafana.cmd
 ```
 
 Url: http://localhost:3000/
@@ -328,6 +336,8 @@ Url: http://localhost:3000/
 User: admin
 
 Password admin
+
+#### Configure Grafana
 
 + Configuration
  + Data Sources
@@ -339,12 +349,32 @@ Password admin
 ### Graylog
 
 ```cmd
-docker run --name mongo -d mongo:3
-docker run --name elasticsearch -e "http.host=0.0.0.0" -e "ES_JAVA_OPTS=-Xms512m -Xmx512m" -d docker.elastic.co/elasticsearch/elasticsearch-oss:6.8.5
-docker run --name graylog --link mongo --link elasticsearch -p 9000:9000 -p 12201:12201 -p 1514:1514 -e GRAYLOG_HTTP_EXTERNAL_URI="http://127.0.0.1:9000/" -d graylog/graylog:3.2
+launchgraylog.cmd
 ```
 
 User: admin
 
 Password: admin
+
+#### Configure Graylog
+
++ System
+ + Inputs
+  + Select Input
+   + GELF TCP
+    + Select node
+     + Save
+	 
+![](https://github.com/danielboterocorrea/PaymentGatewayCheckout/blob/master/Images/Graylog.PNG)
+
+### Launch apis
+
+```cmd
+#Authorization Server
+launchidentityserver.cmd
+#Acquiring Simulator
+launchacquiringbanksimulator.cmd
+#Payment Gateway
+launchpaymentgateway.cmd
+```
 
