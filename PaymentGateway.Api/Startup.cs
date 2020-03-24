@@ -37,13 +37,13 @@ namespace PaymentGateway.Api
 {
     public class Startup
     {
+        public IConfiguration Configuration { get; set; }
+        private string DatabaseName => Configuration["PaymentGateway:DatabaseName"];
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
-
-        public IConfiguration Configuration { get; }
-        private string DatabaseName => Configuration["PaymentGateway:DatabaseName"];
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public virtual void ConfigureServices(IServiceCollection services)
@@ -95,21 +95,9 @@ namespace PaymentGateway.Api
             });
             
             services.AddTransient<IPaymentService, PaymentService>();
-            services.AddTransient(sp =>
-            {
-                var loggerFactory = sp.GetService<ILoggerFactory>();
-                var cryptor = sp.GetService<ICryptor>();
-                var httpClientFactory = sp.GetService<IHttpClientFactory>();
-                var gatewayCache = sp.GetService<IGatewayCache>();
-                var paymentRepository = new PaymentCacheRepository(new PaymentRepository(cryptor, GetLongRunningContext()),
-                    loggerFactory.CreateLogger<PaymentCacheRepository>(), gatewayCache);
-                var httpClient = httpClientFactory.CreateClient();
-                return new AcquiringBankPaymentService(loggerFactory.CreateLogger<AcquiringBankPaymentService>(),
-                    httpClient, paymentRepository,Configuration);
-            });
         }
 
-        private static PaymentGatewayContext PaymentGatewayContextLongRunning = null;
+        private PaymentGatewayContext PaymentGatewayContextLongRunning = null;
         public PaymentGatewayContext GetLongRunningContext()
         {
             if(PaymentGatewayContextLongRunning == null)
@@ -130,10 +118,22 @@ namespace PaymentGateway.Api
             services.AddTransient<IDateTimeProvider, DateTimeProvider>();
         }
 
-        private static ConsumerSender<T,R> GetProducerConsumerSender<T, R>(IServiceProvider sp) where T : IGetId
+        private ISentItemFactory<T, R> GetSenderFactory<T, R>(IServiceProvider sp) where T : IGetId
         {
             var loggerFactory = sp.GetService<ILoggerFactory>();
-            var retriesFactory = new SendItemFactory<T,R>(sp);
+            var cryptor = sp.GetService<ICryptor>();
+            var httpClientFactory = sp.GetService<IHttpClientFactory>();
+            var gatewayCache = sp.GetService<IGatewayCache>();
+            var paymentRepository = new PaymentCacheRepository(new PaymentRepository(cryptor, GetLongRunningContext()),
+                loggerFactory.CreateLogger<PaymentCacheRepository>(), gatewayCache);
+            
+            return new SendItemFactory<T, R>(loggerFactory, paymentRepository, Configuration, httpClientFactory);
+        }
+
+        private ConsumerSender<T,R> GetProducerConsumerSender<T, R>(IServiceProvider sp) where T : IGetId
+        {
+            var loggerFactory = sp.GetService<ILoggerFactory>();
+            var retriesFactory = GetSenderFactory<T,R>(sp);
             var inMemoryQueue = sp.GetService<IQueueProvider<T>>();
             return new ConsumerSender<T, R>(loggerFactory.CreateLogger<ConsumerSender<T, R>>(), 3,
                 retriesFactory, inMemoryQueue);
