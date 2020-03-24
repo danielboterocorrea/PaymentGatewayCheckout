@@ -311,9 +311,9 @@ The business metrics I found nice to have were:
 ### Pre-installation
 
 ```cmd
-#Build solution
+:: Build solution
 build.cmd
-#Install network
+:: Install network
 createnetwork.cmd
 ```
 
@@ -370,11 +370,11 @@ Password: admin
 ### Launch apis
 
 ```cmd
-#Authorization Server
+:: Authorization Server
 launchidentityserver.cmd
-#Acquiring Simulator
+:: Acquiring Simulator
 launchacquiringbanksimulator.cmd
-#Payment Gateway
+:: Payment Gateway
 launchpaymentgateway.cmd
 ```
 
