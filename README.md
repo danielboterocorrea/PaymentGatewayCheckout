@@ -388,6 +388,8 @@ Password: admin
 	 
 ![](https://github.com/danielboterocorrea/PaymentGatewayCheckout/blob/master/Images/Graylog.PNG)
 
+Pd: After configuring graylog, you might have to close paymentgatewayapi and reopen it. Looks like there is a bug in the Graylog's Serilog sink.
+
 ### Launch apis
 
 ```cmd
