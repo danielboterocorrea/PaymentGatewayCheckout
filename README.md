@@ -385,6 +385,6 @@ PaymentGatewayApi Url: https://localhost:44346/index.html
 
 ### Launch all-in-one
 
-```cmd
-launchproject.cmd
+```bat
+launchproject.bat
 ```
