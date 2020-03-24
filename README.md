@@ -278,7 +278,7 @@ A consumer picks up the payment request and send it to the acquiring bank. The f
 
 ## Business Metrics
 
-The business metrics I found nice to have were:
+The business metrics that we must have are:
 + Time Payments Retrieved: Average time per request when payment is retrieved
 + Time Payments Received: Average time per request when payment is received
 + Payments Received: Number of payments received
@@ -381,3 +381,10 @@ launchpaymentgateway.cmd
 ```
 
 PaymentGatewayApi Url: https://localhost:44346/index.html
+
+
+### Launch all-in-one
+
+```cmd
+launchproject.cmd
+```

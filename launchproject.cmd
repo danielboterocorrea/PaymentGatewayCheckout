@@ -1,0 +1,8 @@
+build.cmd
+createnetwork.cmd
+launchgraylog.cmd
+launchprometheus.cmd
+launchgrafana.cmd
+launchidentityserver.cmd
+launchacquiringbanksimulator.cmd
+launchpaymentgateway.cmd

@@ -49,7 +49,7 @@ namespace PaymentGateway.IntegrationTests.Performance
         [TestCase(10)]
         [TestCase(100)]
         [TestCase(1000)]
-        [TestCase(10000)]
+        //[TestCase(10000)]
         public void PaymentPostPerformanceTest(int requests)
         {
             double min = double.MaxValue;
