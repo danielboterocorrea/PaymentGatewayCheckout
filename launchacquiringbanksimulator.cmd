@@ -1,0 +1,1 @@
+docker run --rm -it -p 53677:80 -p 44398:443 -e ASPNETCORE_ENVIRONMENT="Production" -e ASPNETCORE_URLS="https://+;http://+" -e ASPNETCORE_HTTPS_PORT=44398 -e ASPNETCORE_Kestrel__Certificates__Default__Password="admin" -e ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx -v %USERPROFILE%\.aspnet\https:/https/ acquiringbanksimulator --net=dockernet

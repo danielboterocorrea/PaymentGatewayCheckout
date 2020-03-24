@@ -1,0 +1,2 @@
+docker run --rm -it -p 53746:80 -p 44346:443 -e ASPNETCORE_ENVIRONMENT="Production" -e ASPNETCORE_URLS="https://+;http://+" -e ASPNETCORE_HTTPS_PORT=44346 -e ASPNETCORE_Kestrel__Certificates__Default__Password="admin" -e ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx -v %USERPROFILE%\.aspnet\https:/https/ paymentgatewayapi
+--net=dockernet
