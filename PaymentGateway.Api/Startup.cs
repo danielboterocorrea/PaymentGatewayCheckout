@@ -195,7 +195,7 @@ namespace PaymentGateway.Api
             });
         }
 
-        private static void ConfigureIdentityServer(IServiceCollection services, string authority)
+        private void ConfigureIdentityServer(IServiceCollection services, string authority)
         {
             IdentityModelEventSource.ShowPII = true;
             //IdentityServer4
@@ -203,8 +203,7 @@ namespace PaymentGateway.Api
                 .AddJwtBearer("Bearer", options =>
                 {
                     options.Authority = authority;
-                    options.RequireHttpsMetadata = true;
-                    options.MetadataAddress = $"http://localhost:5003/.well-known/openid-configuration";
+                    options.MetadataAddress = $"{Configuration["PaymentGateway:IdentityServerMetadataHost"]}/.well-known/openid-configuration";
                     options.RequireHttpsMetadata = false;
                     options.Audience = "PaymentGatewayApi";
                 });
