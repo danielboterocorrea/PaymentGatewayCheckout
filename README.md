@@ -358,7 +358,7 @@ Password admin
       + Url: http://localhost:9090
       + if for some reason it doesn't work, use http://{IPv4 Address}:9090 to find your IPv4 Address, open up a cmd prompt and type ipcfonfig
 	 
-In the graphic interface look for the + in the left hand side
+In the graphic interface look for the + on the left hand side
 
 + import
  + Upload .json file
