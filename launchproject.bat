@@ -1,1 +1,1 @@
-build.cmd && createnetwork.cmd && launchgraylog.cmd && launchprometheus.cmd && launchgrafana.cmd && start cmd /k launchidentityserver.cmd && start cmd /k launchacquiringbanksimulator.cmd && start cmd /k launchpaymentgateway.cmd
+build.cmd && createnetwork.cmd && launchgraylog.cmd && launchprometheus.cmd && launchgrafana.cmd && start cmd /k launchidentityserver.cmd && start cmd /k launchacquiringbanksimulator.cmd && start cmd /k launchpaymentgateway.cmd && start chrome https://localhost:44346/ && start chrome http://localhost:3000/ && start chrome http://localhost:9000/

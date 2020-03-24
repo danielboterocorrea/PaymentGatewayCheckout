@@ -385,6 +385,9 @@ PaymentGatewayApi Url: https://localhost:44346/index.html
 
 ### Launch all-in-one
 
++ Make sure you don't have any above container running
++ Run:
 ```bat
 launchproject.bat
 ```
++ Wait a second or two so that the images have time to warm up
