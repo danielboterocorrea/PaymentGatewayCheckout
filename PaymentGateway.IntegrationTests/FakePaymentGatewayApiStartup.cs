@@ -14,7 +14,6 @@ namespace PaymentGateway.IntegrationTests
 
         public override void LaunchConsumer(IServiceProvider serviceProvider)
         {
-
         }
     }
 }

@@ -8,22 +8,27 @@ using System.Text;
 using System.Threading;
 using PaymentGateway.Api.Helpers;
 using PaymentGateway.IntegrationTests.Helpers;
+using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace PaymentGateway.IntegrationTests.Controllers
 {
     [TestFixture]
     public class PaymentsControllerTests
     {
+        private WebApplicationFactory<FakePaymentGatewayApiStartup> paymentGatewayFactory;
+
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
             SharedTestsHelper.LaunchIdentityServer();
+
+            paymentGatewayFactory = TestHelper.CreateCustomWebApplicationFactory();
         }
 
         [Test]
         public void PaymentNotFound()
         {
-            var paymentGatewayApiClient = TestHelper.CreatePaymentGatewayHttpClient();
+            var paymentGatewayApiClient = TestHelper.CreatePaymentGatewayHttpClient(paymentGatewayFactory);
             var response = paymentGatewayApiClient.GetAsync("/api/Payments/620d725e-6cdb-4be5-a978-25eb38de1a53").GetAwaiter().GetResult();
             response.StatusCode.Should().Be(HttpStatusCode.NotFound);
             response.Content
@@ -37,7 +42,7 @@ namespace PaymentGateway.IntegrationTests.Controllers
         [Test]
         public void PostPaymentRequest()
         {
-            var paymentGatewayApiClient = TestHelper.CreatePaymentGatewayHttpClient();
+            var paymentGatewayApiClient = TestHelper.CreatePaymentGatewayHttpClient(paymentGatewayFactory);
 
             var body = JsonConvert.SerializeObject(SharedTestsHelper.GetValidPaymentRequest());
             // Wrap our JSON inside a StringContent which then can be used by the HttpClient class

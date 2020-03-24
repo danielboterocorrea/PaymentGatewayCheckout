@@ -277,44 +277,22 @@ namespace PaymentGateway.SharedTests
         }
 
         private static IConfiguration configuration = null;
-        public static IConfiguration Configuration { get{
-            if(configuration == null)
-            {
-                configuration = new ConfigurationBuilder()
-                .SetBasePath(Path.Combine(AppContext.BaseDirectory))
-                .AddJsonFile($"appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"appsettings.Testing.json", optional: false, reloadOnChange: true)
-                .Build();
-            }
-            return configuration;
-        }
-}
-
-        public static ISendItem<T, R> GetSendPayment<T, R>(HttpClient httpClient) where T : IGetId
+        public static IConfiguration Configuration
         {
-            
-
-            var cryptor = GetCryptor();
-            var cache = GetCache();
-            var context = GetPaymentGatewayContext();
-            var paymentRepository = new PaymentCacheRepository(new PaymentRepository(cryptor, context),
-                TestLogger.Create<PaymentCacheRepository>(), cache);
-            var acquiringBankPaymentService = new AcquiringBankPaymentService(TestLogger.Create<AcquiringBankPaymentService>(),
-                httpClient, paymentRepository, configuration);
-            var timeOutHttpRequest = new TimeoutRequest<T, R>((ISendItem<T, R>)acquiringBankPaymentService,
-                TestLogger.Create<TimeoutRequest<T, R>>(), TimeSpan.FromSeconds(20));
-            var retries = new RetryRequest<T, R>(timeOutHttpRequest,
-                TestLogger.Create<RetryRequest<T, R>>(), 3);
-
-            return retries;
+            get
+            {
+                if (configuration == null)
+                {
+                    configuration = new ConfigurationBuilder()
+                    .SetBasePath(Path.Combine(AppContext.BaseDirectory))
+                    .AddJsonFile($"appsettings.json", optional: false, reloadOnChange: true)
+                    .AddJsonFile($"appsettings.Testing.json", optional: false, reloadOnChange: true)
+                    .Build();
+                }
+                return configuration;
+            }
         }
         
-        public static ConsumerSender<T, R> GetProducerConsumerSender<T, R>(HttpClient httpClient, IQueueProvider<T> producerConsumer) where T : IGetId
-        {
-            var retries = GetSendPayment<T, R>(httpClient);
-            return new ConsumerSender<T, R>(TestLogger.Create<ConsumerSender<T, R>>(), 3, retries, (IQueueProvider<T>)producerConsumer);
-        }
-
         public static PaymentService GetPaymentServiceWithMockedPublisher()
         {
             var logger = new NullLogger<PaymentService>();

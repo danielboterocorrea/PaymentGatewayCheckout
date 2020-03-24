@@ -13,12 +13,12 @@ namespace PaymentGateway.Infrastructure.Toolbox
         private BlockingCollection<WorkItem<T, R>> _taskQ;
         private readonly ILogger<ConsumerSender<T, R>> _logger;
         private readonly int _workerCount;
-        private readonly ISendItem<T, R> _sendPayment;
+        private readonly ISentItemFactory<T, R> _sendPaymentFactory;
         private readonly IQueueProvider<T> _inMemoryQueue;
         private readonly CancellationTokenSource _cancellationTokenSource;
 
         public ConsumerSender(ILogger<ConsumerSender<T, R>> logger,
-            int workerCount, ISendItem<T, R> sendPayment, IQueueProvider<T> inMemoryQueue)
+            int workerCount, ISentItemFactory<T, R> sendPaymentFactory, IQueueProvider<T> inMemoryQueue)
         {
             logger.LogInformation($"Initializing threads [{workerCount}]");
             _taskQ = new BlockingCollection<WorkItem<T, R>>();
@@ -26,7 +26,7 @@ namespace PaymentGateway.Infrastructure.Toolbox
             _cancellationTokenSource = new CancellationTokenSource();
             _logger = logger;
             _workerCount = workerCount;
-            _sendPayment = sendPayment;
+            _sendPaymentFactory = sendPaymentFactory;
             
             for(int i = 0; i < _workerCount; i++)
                 Task.Factory.StartNew(EnqueueTask);
@@ -37,7 +37,7 @@ namespace PaymentGateway.Infrastructure.Toolbox
             foreach (var request in _inMemoryQueue.GetConsumingEnumerable())
             {
                 _logger.LogDebug($"EnqueueTask {typeof(T)} [{request.GetId()}]");
-                EnqueueTask(_sendPayment.SendAsync(request, _cancellationTokenSource.Token), request);
+                EnqueueTask(_sendPaymentFactory.CreateSendItem().SendAsync(request, _cancellationTokenSource.Token), request);
             }
         }
 
@@ -54,6 +54,7 @@ namespace PaymentGateway.Infrastructure.Toolbox
                 try
                 {
                     _logger.LogDebug($"Consuming {typeof(T)} [{workItem.item.GetId()}]");
+
                     var response = await workItem.Task;
                     
                     _logger.LogInformation($"{workItem.item.GetId()} has been treated succesfully");
@@ -62,7 +63,7 @@ namespace PaymentGateway.Infrastructure.Toolbox
                 {
                     _logger.LogError(ex, $"Error treating {typeof(T)} [{workItem.item.GetId()}]");
                     _logger.LogError(ex, $"Enqueuing {typeof(T)} [{workItem.item.GetId()}] after failure");
-                    EnqueueTask(_sendPayment.SendAsync(workItem.item, _cancellationTokenSource.Token), workItem.item);
+                    EnqueueTask(_sendPaymentFactory.CreateSendItem().SendAsync(workItem.item, _cancellationTokenSource.Token), workItem.item);
                 }
 
             }

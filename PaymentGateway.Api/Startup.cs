@@ -97,10 +97,10 @@ namespace PaymentGateway.Api
             services.AddTransient<IPaymentService, PaymentService>();
             services.AddTransient(sp =>
             {
-                var loggerFactory = (ILoggerFactory)sp.GetService(typeof(ILoggerFactory));
-                var cryptor = (ICryptor)sp.GetService(typeof(ICryptor));
-                var httpClientFactory = (IHttpClientFactory)sp.GetService(typeof(IHttpClientFactory));
-                var gatewayCache = (IGatewayCache)sp.GetService(typeof(IGatewayCache));
+                var loggerFactory = sp.GetService<ILoggerFactory>();
+                var cryptor = sp.GetService<ICryptor>();
+                var httpClientFactory = sp.GetService<IHttpClientFactory>();
+                var gatewayCache = sp.GetService<IGatewayCache>();
                 var paymentRepository = new PaymentCacheRepository(new PaymentRepository(cryptor, GetLongRunningContext()),
                     loggerFactory.CreateLogger<PaymentCacheRepository>(), gatewayCache);
                 var httpClient = httpClientFactory.CreateClient();
@@ -128,28 +128,15 @@ namespace PaymentGateway.Api
             services.AddTransient<ICryptor>(sp => new Cryptor(Configuration["PaymentGateway:CryptoSecret"]));
             services.AddSingleton<IGatewayCache, InMemoryGatewayCache>();
             services.AddTransient<IDateTimeProvider, DateTimeProvider>();
-
-        }
-
-        private static ISendItem<T, R> GetSendPayment<T, R>(IServiceProvider sp) where T : IGetId
-        {
-            var loggerFactory = (ILoggerFactory)sp.GetService(typeof(ILoggerFactory));
-            var acquiringBankPaymentService = (AcquiringBankPaymentService)sp.GetService(typeof(AcquiringBankPaymentService));
-            var timeOutHttpRequest = new TimeoutRequest<T, R>((ISendItem<T, R>)acquiringBankPaymentService,
-                loggerFactory.CreateLogger<TimeoutRequest<T, R>>(), TimeSpan.FromSeconds(20));
-            var retries = new RetryRequest<T, R>(timeOutHttpRequest,
-                loggerFactory.CreateLogger<RetryRequest<T, R>>(), 3);
-
-            return retries;
         }
 
         private static ConsumerSender<T,R> GetProducerConsumerSender<T, R>(IServiceProvider sp) where T : IGetId
         {
-            var loggerFactory = (ILoggerFactory)sp.GetService(typeof(ILoggerFactory));
-            var retries = GetSendPayment<T, R>(sp);
-            var inMemoryQueue = (IQueueProvider<T>)sp.GetService(typeof(IQueueProvider<T>));
+            var loggerFactory = sp.GetService<ILoggerFactory>();
+            var retriesFactory = new SendItemFactory<T,R>(sp);
+            var inMemoryQueue = sp.GetService<IQueueProvider<T>>();
             return new ConsumerSender<T, R>(loggerFactory.CreateLogger<ConsumerSender<T, R>>(), 3,
-                retries, inMemoryQueue);
+                retriesFactory, inMemoryQueue);
         }
 
         private static void ConfigureRules(IServiceCollection services)

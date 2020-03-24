@@ -1,5 +1,6 @@
 ﻿
 using FluentAssertions;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 using PaymentGateway.Application.RequestModels;
@@ -10,6 +11,7 @@ using PaymentGateway.Domain.Common;
 using PaymentGateway.Domain.Toolbox;
 using PaymentGateway.Infrastructure.Repositories.Cache;
 using PaymentGateway.Infrastructure.Toolbox;
+using PaymentGateway.IntegrationTests.Helpers;
 using PaymentGateway.SharedTests;
 using System;
 using System.Collections.Generic;
@@ -22,13 +24,13 @@ namespace PaymentGateway.IntegrationTests.Application
     [TestFixture]
     public class ConsumerSenderTests
     {
-        ILogger<ConsumerSenderTests> _logger;
+        private WebApplicationFactory<FakePaymentGatewayApiStartup> paymentGatewayFactory;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
             SharedTestsHelper.LaunchIdentityServer();
-            _logger = TestLogger.Create<ConsumerSenderTests>();
+            paymentGatewayFactory = TestHelper.CreateCustomWebApplicationFactory();
         }
 
 
@@ -46,14 +48,12 @@ namespace PaymentGateway.IntegrationTests.Application
             SharedTestsHelper.DetachObjectFromDb(dbContext);
 
             SharedTestsHelper.PaymentExists(id).Should().BeTrue();
-
             var httpClient = SharedTestsHelper.GetHttpClientAcquiringSimulatorMockedSuccess(id);
-
-            var consumer = SharedTestsHelper.GetProducerConsumerSender<PaymentRequest, AcquiringBankPaymentResponse>(httpClient, queue);
+            var consumer = TestHelper.GetProducerConsumerSender<PaymentRequest, AcquiringBankPaymentResponse>(httpClient, paymentGatewayFactory, queue);
             Task.Run(() => consumer.ConsumeAsync().GetAwaiter().GetResult());
            
 
-            while(((InMemoryQueue<PaymentRequest>)queue).Requests.Count != 0)
+            while(queue.Requests.Count != 0)
             {
                 Thread.Sleep(100);
             }
@@ -77,11 +77,11 @@ namespace PaymentGateway.IntegrationTests.Application
 
             var httpClient = SharedTestsHelper.GetHttpClientAcquiringSimulatorMockedFailure(id);
 
-            var consumer = SharedTestsHelper.GetProducerConsumerSender<PaymentRequest, AcquiringBankPaymentResponse>(httpClient, queue);
+            var consumer = TestHelper.GetProducerConsumerSender<PaymentRequest, AcquiringBankPaymentResponse>(httpClient, paymentGatewayFactory, queue);
             Task.Run(() => consumer.ConsumeAsync().GetAwaiter().GetResult());
             
 
-            while (((InMemoryQueue<PaymentRequest>)queue).Requests.Count != 0)
+            while (queue.Requests.Count != 0)
             {
                 Thread.Sleep(100);
             }

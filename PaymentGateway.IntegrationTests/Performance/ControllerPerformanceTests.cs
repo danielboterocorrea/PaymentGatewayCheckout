@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using NUnit.Framework;
@@ -22,12 +23,15 @@ namespace PaymentGateway.IntegrationTests.Performance
     public class ControllerPerformanceTests
     {
         ILogger<ControllerPerformanceTests> _logger;
+        private WebApplicationFactory<FakePaymentGatewayApiStartup> paymentGatewayFactory;
+
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
             SharedTestsHelper.LaunchIdentityServer();
             SharedTestsHelper.LaunchAcquiringSimulator();
             _logger = TestLogger.Create<ControllerPerformanceTests>();
+            paymentGatewayFactory = TestHelper.CreateCustomWebApplicationFactory();
         }
 
         private double min;
@@ -56,7 +60,7 @@ namespace PaymentGateway.IntegrationTests.Performance
             double max = double.MinValue;
             double sum = 0;
 
-            var paymentGatewayApiClient = TestHelper.CreatePaymentGatewayHttpClient();
+            var paymentGatewayApiClient = TestHelper.CreatePaymentGatewayHttpClient(paymentGatewayFactory);
             //Warming up
             paymentGatewayApiClient.GetAsync($"/api/Payments/f7507410-6fe2-45c2-8f94-5a8ef8a66daa").GetAwaiter().GetResult();
 
@@ -103,11 +107,11 @@ namespace PaymentGateway.IntegrationTests.Performance
         [TestCase(10)]
         [TestCase(100)]
         [TestCase(1000)]
-        [TestCase(10000)]
+        //[TestCase(10000)]
         public void PaymentPostMultithreadingPerformanceTest(int parallelRequests)
         {
             List<Task> tasks = new List<Task>();
-            var paymentGatewayApiClient = TestHelper.CreatePaymentGatewayHttpClient();
+            var paymentGatewayApiClient = TestHelper.CreatePaymentGatewayHttpClient(paymentGatewayFactory);
             //Warming up
             paymentGatewayApiClient.GetAsync($"/api/Payments/f7507410-6fe2-45c2-8f94-5a8ef8a66daa").GetAwaiter().GetResult();
 
