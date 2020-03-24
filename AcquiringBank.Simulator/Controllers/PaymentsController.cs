@@ -19,14 +19,14 @@ namespace AcquiringBank.Simulator.Controllers
         }
         // GET: api/Payments
         [HttpGet]
-        public async Task<ActionResult> Get()
+        public ActionResult Get()
         {
             return Ok("262bd6aa-43fb-495a-a9cf-8facceb1b4c7");
         }
 
         // POST: api/Payments
         [HttpPost]
-        public async Task<ActionResult> Post([FromBody] PaymentRequest paymentRequest)
+        public ActionResult Post([FromBody] PaymentRequest paymentRequest)
         {
             //Thread.Sleep(int.MaxValue);
             int value = _random.Next(0, 7);
